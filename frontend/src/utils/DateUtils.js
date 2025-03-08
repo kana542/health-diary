@@ -1,133 +1,133 @@
 /**
  * DateUtils.js
- * Keskitetty päivämäärien käsittelyluokka, joka huolehtii päivämäärien
- * johdonmukaisesta käsittelystä sovelluksen eri osissa.
+ * Centralized date handling class that ensures consistent
+ * date processing across different parts of the application.
  */
 
 export class DateUtils {
-   /**
-    * Muuntaa minkä tahansa päivämäärän ISO-muotoon (YYYY-MM-DD)
-    * @param {Date|string} date - Päivämäärä objektina tai merkkijonona
-    * @returns {string} ISO-muotoinen päivämäärä (YYYY-MM-DD)
-    */
-   static toISODate(date) {
-     if (!date) return '';
+  /**
+   * Converts any date to ISO format (YYYY-MM-DD)
+   * @param {Date|string} date - Date as an object or string
+   * @returns {string} ISO-formatted date (YYYY-MM-DD)
+   */
+  static toISODate(date) {
+    if (!date) return '';
 
-     // Jos on jo ISO-merkkijono, palauta se suoraan
-     if (typeof date === 'string') {
-       // Jos sisältää T-erottimen (ISO datetime), ota vain päivämääräosa
-       if (date.includes('T')) {
-         return date.split('T')[0];
-       }
-       // Jos on jo YYYY-MM-DD muodossa, palauta se
-       if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-         return date;
-       }
-     }
+    // If already an ISO string, return it directly
+    if (typeof date === 'string') {
+      // If it contains T-separator (ISO datetime), take only the date part
+      if (date.includes('T')) {
+        return date.split('T')[0];
+      }
+      // If already in YYYY-MM-DD format, return it
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return date;
+      }
+    }
 
-     // Muunnos Date-objektiksi
-     const dateObj = typeof date === 'string' ? new Date(date) : date;
+    // Convert to Date object
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
 
-     // Varmista että on validi päivämäärä
-     if (!(dateObj instanceof Date) || isNaN(dateObj)) {
-       console.error('Virheellinen päivämäärä:', date);
-       return '';
-     }
+    // Ensure it's a valid date
+    if (!(dateObj instanceof Date) || isNaN(dateObj)) {
+      console.error('Invalid date:', date);
+      return '';
+    }
 
-     // Käytä paikallista aikaa päivämäärän muodostuksessa välttääksemme UTC-siirtymiä
-     const year = dateObj.getFullYear();
-     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-     const day = String(dateObj.getDate()).padStart(2, '0');
+    // Use local time to create the date to avoid UTC shifts
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
 
-     return `${year}-${month}-${day}`;
-   }
+    return `${year}-${month}-${day}`;
+  }
 
-   /**
-    * Muotoilee päivämäärän näyttömuotoon
-    * @param {string} isoDate - ISO-muotoinen päivämäärä (YYYY-MM-DD)
-    * @param {Object} options - Muotoiluasetukset
-    * @returns {string} Muotoiltu päivämäärä
-    */
-   static formatDisplayDate(isoDate, options = {}) {
-     if (!isoDate) return '';
+  /**
+   * Formats a date for display
+   * @param {string} isoDate - ISO-formatted date (YYYY-MM-DD)
+   * @param {Object} options - Formatting options
+   * @returns {string} Formatted date
+   */
+  static formatDisplayDate(isoDate, options = {}) {
+    if (!isoDate) return '';
 
-     // Lisää kellonaika 12:00:00Z, jotta päivämäärä pysyy samana kaikissa aikavyöhykkeissä
-     const date = new Date(`${this.toISODate(isoDate)}T12:00:00Z`);
+    // Add time 12:00:00Z to ensure the date remains the same in all timezones
+    const date = new Date(`${this.toISODate(isoDate)}T12:00:00Z`);
 
-     const defaultOptions = {
-       weekday: 'long',
-       day: 'numeric',
-       month: 'long',
-       year: 'numeric'
-     };
+    const defaultOptions = {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    };
 
-     return date.toLocaleDateString('fi-FI', { ...defaultOptions, ...options });
-   }
+    return date.toLocaleDateString('en-US', { ...defaultOptions, ...options });
+  }
 
-   /**
-    * Palauttaa tämän päivän ISO-muodossa
-    * @returns {string} Tämän päivän päivämäärä ISO-muodossa
-    */
-   static today() {
-     return this.toISODate(new Date());
-   }
+  /**
+   * Returns today's date in ISO format
+   * @returns {string} Today's date in ISO format
+   */
+  static today() {
+    return this.toISODate(new Date());
+  }
 
-   /**
-    * Vertaa kahta päivämäärää (ovatko samat päivät)
-    * @param {string} date1 - Ensimmäinen päivämäärä
-    * @param {string} date2 - Toinen päivämäärä
-    * @returns {boolean} Ovatko päivämäärät samat
-    */
-   static isSameDay(date1, date2) {
-     return this.toISODate(date1) === this.toISODate(date2);
-   }
+  /**
+   * Compares two dates (whether they are the same day)
+   * @param {string} date1 - First date
+   * @param {string} date2 - Second date
+   * @returns {boolean} Whether the dates are the same
+   */
+  static isSameDay(date1, date2) {
+    return this.toISODate(date1) === this.toISODate(date2);
+  }
 
-   /**
-    * Palauttaa kuukauden ensimmäisen ja viimeisen päivän
-    * @param {number} year - Vuosi
-    * @param {number} month - Kuukausi (0-11)
-    * @returns {Object} Kuukauden ensimmäinen ja viimeinen päivä
-    */
-   static getMonthRange(year, month) {
-     const firstDay = new Date(year, month, 1);
-     const lastDay = new Date(year, month + 1, 0);
+  /**
+   * Returns the first and last day of a month
+   * @param {number} year - Year
+   * @param {number} month - Month (0-11)
+   * @returns {Object} First and last day of the month
+   */
+  static getMonthRange(year, month) {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
 
-     return {
-       firstDay: this.toISODate(firstDay),
-       lastDay: this.toISODate(lastDay),
-       daysInMonth: lastDay.getDate()
-     };
-   }
+    return {
+      firstDay: this.toISODate(firstDay),
+      lastDay: this.toISODate(lastDay),
+      daysInMonth: lastDay.getDate()
+    };
+  }
 
-   /**
-    * Laskee ISO-standardin mukaisen viikkonumeron
-    * @param {Date|string} date - Päivämäärä
-    * @returns {number} Viikkonumero
-    */
-   static getWeekNumber(date) {
-     // Muunna ISO-merkkijono päivämääräksi keskipäivällä välttääksemme aikavyöhykeongelmia
-     const d = typeof date === 'string'
-       ? new Date(`${this.toISODate(date)}T12:00:00Z`)
-       : new Date(date);
+  /**
+   * Calculates the ISO standard week number
+   * @param {Date|string} date - Date
+   * @returns {number} Week number
+   */
+  static getWeekNumber(date) {
+    // Convert ISO string to date at noon to avoid timezone issues
+    const d = typeof date === 'string'
+      ? new Date(`${this.toISODate(date)}T12:00:00Z`)
+      : new Date(date);
 
-     // Kopioi päivämäärä
-     const targetDate = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    // Copy the date
+    const targetDate = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
 
-     // ISO 8601 viikkojen laskutapa (Eurooppalainen)
-     const dayNum = targetDate.getUTCDay() || 7;
-     targetDate.setUTCDate(targetDate.getUTCDate() + 4 - dayNum);
-     const firstDayOfYear = new Date(Date.UTC(targetDate.getUTCFullYear(), 0, 1));
-     return Math.ceil((((targetDate - firstDayOfYear) / 86400000) + 1) / 7);
-   }
+    // ISO 8601 week calculation method (European)
+    const dayNum = targetDate.getUTCDay() || 7;
+    targetDate.setUTCDate(targetDate.getUTCDate() + 4 - dayNum);
+    const firstDayOfYear = new Date(Date.UTC(targetDate.getUTCFullYear(), 0, 1));
+    return Math.ceil((((targetDate - firstDayOfYear) / 86400000) + 1) / 7);
+  }
 
-   /**
-    * Muodostaa päivämäärän kuukaudesta ja päivästä
-    * @param {number} year - Vuosi
-    * @param {number} month - Kuukausi (0-11)
-    * @param {number} day - Päivä
-    * @returns {string} ISO-muotoinen päivämäärä
-    */
-   static createDate(year, month, day) {
-     return this.toISODate(new Date(year, month, day));
-   }
- }
+  /**
+   * Creates a date from year, month and day
+   * @param {number} year - Year
+   * @param {number} month - Month (0-11)
+   * @param {number} day - Day
+   * @returns {string} ISO-formatted date
+   */
+  static createDate(year, month, day) {
+    return this.toISODate(new Date(year, month, day));
+  }
+}

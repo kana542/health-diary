@@ -1,9 +1,17 @@
 import auth from '../core/Auth.js';
 import { eventBus } from '../core/EventBus.js';
 
+/**
+ * Login view component
+ * Handles user authentication UI and form submission
+ */
 export default class LoginView {
+    /**
+     * Renders the login form with error/success messages
+     * @returns {string} HTML markup for the login view
+     */
     static render() {
-        // Tarkistetaan, onko session storagessa virheilmoitus
+        // Check if there's an error message in session storage
         const errorMsg = sessionStorage.getItem('loginError') || '';
         const showError = errorMsg ? 'block' : 'none';
         const successMsg = sessionStorage.getItem('registrationSuccess') || '';
@@ -12,56 +20,61 @@ export default class LoginView {
         return `
             <div class="wrapper">
                 <form id="login-form">
-                    <h1>Kirjaudu sisään</h1>
+                    <h1>Log in</h1>
 
                     ${successMsg ? `<div class="success-message" style="display: ${showSuccess};">${successMsg}</div>` : ''}
                     ${errorMsg ? `<div class="error-message" style="display: ${showError};">${errorMsg}</div>` : ''}
 
                     <div class="input-box">
-                        <input type="text" id="username" placeholder="Käyttäjätunnus" required>
+                        <input type="text" id="username" placeholder="Username" required>
                         <box-icon type='solid' name='user' color='white'></box-icon>
                     </div>
 
                     <div class="input-box">
-                        <input type="password" id="password" placeholder="Salasana" required>
+                        <input type="password" id="password" placeholder="Password" required>
                         <box-icon name='lock-alt' type='solid' color='white'></box-icon>
                     </div>
 
                     <div class="remember-forgot">
-                        <label><input type="checkbox" id="remember"> Muista minut</label>
-                        <a href="#">Unohditko salasanan?</a>
+                        <label><input type="checkbox" id="remember"> Remember me</label>
+                        <a href="#">Forgot password?</a>
                     </div>
 
-                    <button type="submit" class="btn">Kirjaudu</button>
+                    <button type="submit" class="btn">Log in</button>
 
                     <div class="register-link">
-                        <p>Etkö ole vielä rekisteröitynyt? <a href="/register">Rekisteröidy</a></p>
+                        <p>Not registered yet? <a href="/register">Register</a></p>
                     </div>
                 </form>
             </div>
         `;
     }
 
+    /**
+     * Initializes the login view functionality
+     * Sets up form submission and input handlers
+     * @returns {Promise<void>}
+     */
     static async initialize() {
-        // Tarkistetaan URL-parametrit
+        // Check URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('registered') === 'true') {
-            sessionStorage.setItem('registrationSuccess', 'Rekisteröinti onnistui! Voit nyt kirjautua sisään.');
-            // Poistetaan parametri URL:sta
+            sessionStorage.setItem('registrationSuccess', 'Registration successful! You can now log in.');
+            // Remove parameter from URL
             window.history.replaceState({}, document.title, '/login');
-            // Ladataan sivu uudelleen, että viesti näkyy
+            // Reload the page to show the message
             window.location.reload();
             return;
         }
 
         const form = document.getElementById('login-form');
 
-        // Poista vanhat tapahtumankäsittelijät
+        // Remove old event handlers
         if (form.hasSubmitListener) {
             form.removeEventListener('submit', form.submitHandler);
         }
 
-        // Määritellään form submit handler
+        // Define form submit handler
         form.submitHandler = async (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -69,9 +82,9 @@ export default class LoginView {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            // Tarkistetaan ettei kentät ole tyhjiä
+            // Check that fields are not empty
             if (!username || !password) {
-                sessionStorage.setItem('loginError', 'Täytä kaikki kentät');
+                sessionStorage.setItem('loginError', 'Please fill in all fields');
                 window.location.reload();
                 return false;
             }
@@ -80,15 +93,15 @@ export default class LoginView {
                 const result = await auth.login(username, password);
 
                 if (result.success) {
-                    // Tyhjennä virheet ennen siirtymistä
+                    // Clear errors before navigating
                     sessionStorage.removeItem('loginError');
                     window.location.href = '/dashboard';
                 } else {
-                    sessionStorage.setItem('loginError', result.error || 'Kirjautuminen epäonnistui');
+                    sessionStorage.setItem('loginError', result.error || 'Login failed');
                     window.location.reload();
                 }
             } catch (error) {
-                sessionStorage.setItem('loginError', error.message || 'Verkkovirhe');
+                sessionStorage.setItem('loginError', error.message || 'Network error');
                 window.location.reload();
             }
 
@@ -98,19 +111,22 @@ export default class LoginView {
         form.addEventListener('submit', form.submitHandler);
         form.hasSubmitListener = true;
 
-        // Kun käyttäjä alkaa kirjoittaa, tyhjennä virheilmoitukset - ei silti poista näkyvistä heti
+        // When user starts typing, clear error messages - but don't remove from display immediately
         document.querySelectorAll('input').forEach(input => {
             input.addEventListener('input', () => {
                 sessionStorage.removeItem('loginError');
             });
         });
 
-        // Tyhjennä onnistumisviesti kun sivu on ladattu
+        // Clear success message when page has loaded
         setTimeout(() => {
             sessionStorage.removeItem('registrationSuccess');
         }, 2000);
     }
 
+    /**
+     * Cleans up event listeners when component is unmounted
+     */
     static cleanup() {
         const form = document.getElementById('login-form');
 

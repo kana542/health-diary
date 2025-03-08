@@ -69,15 +69,15 @@ const insertUser = async (user) => {
       error: error.message
     });
 
-    // Tarkistetaan onko kyseessä duplikaattivirhe
+    // Check if this is a duplicate entry error
     if (error.code === 'ER_DUP_ENTRY') {
-      // Tarkistetaan mikä kenttä aiheutti duplikaattivirheen
+      // Check which field caused the duplicate error
       if (error.message.includes('email')) {
-        throw new Error('Sähköpostiosoite on jo käytössä');
+        throw new Error('Email address is already in use');
       } else if (error.message.includes('username')) {
-        throw new Error('Käyttäjätunnus on jo käytössä');
+        throw new Error('Username is already in use');
       } else {
-        throw new Error('Tili näillä tiedoilla on jo olemassa');
+        throw new Error('An account with this information already exists');
       }
     }
 

@@ -6,6 +6,10 @@ import { ImprovedChart } from '../components/Chart.js';
 import { EntriesList } from '../components/EntriesList.js';
 import { DateUtils } from '../utils/DateUtils.js';
 
+/**
+ * Dashboard view component for health diary application
+ * Manages the main user interface, entry forms, and component integration
+ */
 export default class DashboardView {
     static isInitialized = false;
     static formSubmitHandler = null;
@@ -13,15 +17,19 @@ export default class DashboardView {
     static deleteButtonHandler = null;
     static logoutHandler = null;
 
+    /**
+     * Renders the dashboard HTML structure
+     * @returns {string} HTML markup for the dashboard
+     */
     static render() {
         return `
             <div class="dashboard-wrapper">
                 <div class="dashboard-container">
                     <header class="dashboard-header">
-                        <h1>Terveyspäiväkirja</h1>
+                        <h1>Health Diary</h1>
                         <div class="user-actions">
-                            <span id="username-display">Käyttäjä</span>
-                            <button id="logout-button" class="btn-logout">Kirjaudu ulos</button>
+                            <span id="username-display">User</span>
+                            <button id="logout-button" class="btn-logout">Log out</button>
                         </div>
                     </header>
 
@@ -34,62 +42,62 @@ export default class DashboardView {
                         </div>
                     </div>
 
-                    <!-- Merkintöjen muokkausmodaali -->
+                    <!-- Entry editing modal -->
                     <div id="entry-modal" class="modal">
                         <div class="modal-content">
                             <span class="close">&times;</span>
-                            <h2>Päiväkirjamerkintä</h2>
+                            <h2>Diary Entry</h2>
                             <form id="entry-form">
-                                <!-- Piilotettu kenttä päivämäärälle -->
+                                <!-- Hidden fields for date and ID -->
                                 <input type="hidden" id="entry-date">
                                 <input type="hidden" id="entry-id">
 
                                 <div class="form-group mood-slider-container">
-                                    <label for="mood-slider">Mieliala</label>
+                                    <label for="mood-slider">Mood</label>
                                     <div class="mood-display">
                                         <div class="mood-icon" id="mood-icon">
                                             <box-icon name="confused" type="solid" color="#ffd166"></box-icon>
                                         </div>
-                                        <div class="mood-label" id="mood-label">Neutraali</div>
+                                        <div class="mood-label" id="mood-label">Neutral</div>
                                     </div>
                                     <input type="range" id="mood-slider" min="1" max="5" value="3" class="mood-slider">
                                     <div class="mood-labels">
-                                        <span>Surullinen</span>
-                                        <span>Väsynyt</span>
-                                        <span>Neutraali</span>
-                                        <span>Tyytyväinen</span>
-                                        <span>Iloinen</span>
+                                        <span>Sad</span>
+                                        <span>Tired</span>
+                                        <span>Neutral</span>
+                                        <span>Satisfied</span>
+                                        <span>Happy</span>
                                     </div>
                                     <input type="hidden" id="mood">
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="weight">Paino (kg)</label>
+                                    <label for="weight">Weight (kg)</label>
                                     <input type="number" id="weight" step="0.1" min="0" max="300">
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="sleep">Unitunnit</label>
+                                    <label for="sleep">Sleep hours</label>
                                     <input type="number" id="sleep" step="0.5" min="0" max="24">
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="notes">Muistiinpanot</label>
+                                    <label for="notes">Notes</label>
                                     <textarea id="notes"></textarea>
                                 </div>
 
                                 <div class="form-actions">
-                                    <button type="submit" class="btn">Tallenna</button>
-                                    <button type="button" id="delete-entry" class="btn-delete">Poista</button>
+                                    <button type="submit" class="btn">Save</button>
+                                    <button type="button" id="delete-entry" class="btn-delete">Delete</button>
                                 </div>
                             </form>
                         </div>
                     </div>
 
-                    <!-- Merkintälistan modaali -->
+                    <!-- Entries list modal -->
                     <div id="entries-list-modal" class="modal">
                         <div class="modal-content entries-list-modal-content">
-                            <!-- EntriesList-komponentin sisältö tulee tähän -->
+                            <!-- EntriesList component content will be placed here -->
                         </div>
                     </div>
                 </div>
@@ -97,27 +105,31 @@ export default class DashboardView {
         `;
     }
 
+    /**
+     * Initializes the dashboard components and event handlers
+     * @returns {Promise<void>}
+     */
     static async initialize() {
-        // Tarkista onko näkymä jo alustettu
+        // Check if view is already initialized
         if (this.isInitialized) {
-            console.log("DashboardView on jo alustettu, ohitetaan alustus");
+            console.log("DashboardView is already initialized, skipping initialization");
             return;
         }
 
-        // Merkitse näkymä alustetuksi
+        // Mark view as initialized
         this.isInitialized = true;
 
-        // Näytä käyttäjänimi
+        // Display username
         const user = auth.getUser();
         const usernameDisplay = document.getElementById('username-display');
         if (user) {
             usernameDisplay.textContent = user.username;
         }
 
-        // Kirjaudu ulos -painike
+        // Logout button
         const logoutButton = document.getElementById('logout-button');
         if (logoutButton) {
-            // Poista aiemmat käsittelijät
+            // Remove previous handlers
             logoutButton.removeEventListener('click', this.logoutHandler);
 
             this.logoutHandler = () => {
@@ -128,31 +140,38 @@ export default class DashboardView {
             logoutButton.addEventListener('click', this.logoutHandler);
         }
 
-        // Alusta komponentit
+        // Initialize components
         await this.initializeComponents();
         this.setupEventListeners();
         this.setupEntryForm();
     }
 
+    /**
+     * Initializes the calendar and chart components and loads entries
+     * @returns {Promise<void>}
+     */
     static async initializeComponents() {
-        // Alusta kalenteri ja kaavio
+        // Initialize calendar and chart
         Calendar.initialize();
         ImprovedChart.initialize();
 
-        // Hae päiväkirjamerkinnät
+        // Fetch diary entries
         try {
-            console.log("DashboardView: Haetaan merkinnät");
+            console.log("DashboardView: Fetching entries");
             const entries = await entryService.getAllEntries();
-            console.log("DashboardView: Merkinnät haettu, päivitetään komponentit");
+            console.log("DashboardView: Entries fetched, updating components");
             eventBus.publish('entries:updated', entries);
         } catch (error) {
-            console.error('Virhe haettaessa merkintöjä:', error);
-            this.showErrorNotification('Merkintöjen lataaminen epäonnistui');
+            console.error('Error fetching entries:', error);
+            this.showErrorNotification('Failed to load entries');
         }
     }
 
+    /**
+     * Sets up event listeners for modals and entry-related events
+     */
     static setupEventListeners() {
-        // Modaalien sulkemispainikkeet
+        // Modal close buttons
         const modals = document.querySelectorAll('.modal');
         modals.forEach(modal => {
             const closeBtn = modal.querySelector('.close');
@@ -160,7 +179,7 @@ export default class DashboardView {
                 modal.style.display = 'none';
             });
 
-            // Sulje modaali klikattaessa sen ulkopuolelle
+            // Close modal when clicking outside of it
             window.addEventListener('click', (e) => {
                 if (e.target === modal) {
                     modal.style.display = 'none';
@@ -168,28 +187,31 @@ export default class DashboardView {
             });
         });
 
-        // Merkintöjen tapahtumat
+        // Entry-related events
         eventBus.subscribe('entry:selected', (entry) => this.showEntryModal(entry));
         eventBus.subscribe('date:selected', (date) => this.showNewEntryModal(date));
         eventBus.subscribe('entries:list', (data) => this.showEntriesListModal(data.date, data.entries));
     }
 
+    /**
+     * Sets up the entry form and its event handlers
+     */
     static setupEntryForm() {
         const form = document.getElementById('entry-form');
         const moodSlider = document.getElementById('mood-slider');
         const deleteButton = document.getElementById('delete-entry');
 
-        // Tarkista onko lomake jo alustettu
+        // Check if form is already initialized
         if (form && !form.hasAttribute('data-initialized')) {
-            // Merkitse lomake alustetuksi
+            // Mark form as initialized
             form.setAttribute('data-initialized', 'true');
 
-            // Mieliala-sliderin päivitys
+            // Mood slider update
             if (moodSlider) {
-                // Poista aiemmat käsittelijät
+                // Remove previous handlers
                 moodSlider.removeEventListener('input', this.moodSliderHandler);
 
-                // Luodaan nimetty käsittelijäfunktio
+                // Create named handler function
                 this.moodSliderHandler = (e) => {
                     this.updateMoodIcon(e.target.value);
                 };
@@ -197,32 +219,32 @@ export default class DashboardView {
                 moodSlider.addEventListener('input', this.moodSliderHandler);
             }
 
-            // Lomakkeen lähetys - erittäin tärkeä korjaus
+            // Form submission - critical fix
             if (form.hasSubmitListener) {
-                // Jos käsittelijä on jo rekisteröity, älä rekisteröi uutta
-                console.log("Lomakkeen lähetyskäsittelijä on jo rekisteröity, ohitetaan rekisteröinti");
+                // If handler is already registered, don't register a new one
+                console.log("Form submit handler is already registered, skipping registration");
                 return;
             }
 
-            // Luodaan nimetty käsittelijäfunktio
+            // Create named handler function
             this.formSubmitHandler = async (e) => {
                 e.preventDefault();
 
-                // Estetään useita tallennuksia
+                // Prevent multiple saves
                 if (form.isSubmitting) {
-                    console.log("Lomaketta käsitellään jo, ohitetaan");
+                    console.log("Form is already processing, skipping");
                     return;
                 }
 
                 try {
-                    // Merkitään lomake käsittelyyn
+                    // Mark form as processing
                     form.isSubmitting = true;
 
-                    // Tallennuslogiikka
+                    // Save logic
                     await this.saveEntry();
 
                 } finally {
-                    // Vapautetaan lomake käsittelystä
+                    // Release form from processing
                     form.isSubmitting = false;
                 }
             };
@@ -230,7 +252,7 @@ export default class DashboardView {
             form.addEventListener('submit', this.formSubmitHandler);
             form.hasSubmitListener = true;
 
-            // Merkinnän poisto
+            // Entry deletion
             if (deleteButton) {
                 deleteButton.removeEventListener('click', this.deleteButtonHandler);
 
@@ -243,17 +265,21 @@ export default class DashboardView {
         }
     }
 
+    /**
+     * Updates the mood icon and label based on slider value
+     * @param {number} value - Slider value (1-5)
+     */
     static updateMoodIcon(value) {
         const moodIcon = document.getElementById('mood-icon');
         const moodLabel = document.getElementById('mood-label');
         const moodInput = document.getElementById('mood');
 
         const moodMap = [
-            { value: 1, icon: '<box-icon name="sad" type="solid" color="#d62828"></box-icon>', label: 'Surullinen', code: 'Sad' },
-            { value: 2, icon: '<box-icon name="tired" type="solid" color="#f77f00"></box-icon>', label: 'Väsynyt', code: 'Tired' },
-            { value: 3, icon: '<box-icon name="confused" type="solid" color="#ffd166"></box-icon>', label: 'Neutraali', code: 'Neutral' },
-            { value: 4, icon: '<box-icon name="smile" type="solid" color="#5fa8d3"></box-icon>', label: 'Tyytyväinen', code: 'Satisfied' },
-            { value: 5, icon: '<box-icon name="happy" type="solid" color="#38b000"></box-icon>', label: 'Iloinen', code: 'Happy' }
+            { value: 1, icon: '<box-icon name="sad" type="solid" color="#d62828"></box-icon>', label: 'Sad', code: 'Sad' },
+            { value: 2, icon: '<box-icon name="tired" type="solid" color="#f77f00"></box-icon>', label: 'Tired', code: 'Tired' },
+            { value: 3, icon: '<box-icon name="confused" type="solid" color="#ffd166"></box-icon>', label: 'Neutral', code: 'Neutral' },
+            { value: 4, icon: '<box-icon name="smile" type="solid" color="#5fa8d3"></box-icon>', label: 'Satisfied', code: 'Satisfied' },
+            { value: 5, icon: '<box-icon name="happy" type="solid" color="#38b000"></box-icon>', label: 'Happy', code: 'Happy' }
         ];
 
         const mood = moodMap.find(m => m.value === parseInt(value)) || moodMap[2];
@@ -263,15 +289,19 @@ export default class DashboardView {
         if (moodInput) moodInput.value = mood.code;
     }
 
+    /**
+     * Shows the modal for creating a new entry on the selected date
+     * @param {string} date - The selected date
+     */
     static showNewEntryModal(date) {
-        console.log("showNewEntryModal kutsuttu päivämäärällä:", date);
+        console.log("showNewEntryModal called with date:", date);
 
         const modal = document.getElementById('entry-modal');
         if (!modal) return;
 
-        // Varmista, että päivämäärä on ISO-muodossa
+        // Ensure date is in ISO format
         const isoDate = DateUtils.toISODate(date);
-        console.log("Varmistettu ISO-muotoinen päivämäärä:", isoDate);
+        console.log("Confirmed ISO-formatted date:", isoDate);
 
         const dateInput = document.getElementById('entry-date');
         const entryIdInput = document.getElementById('entry-id');
@@ -281,18 +311,18 @@ export default class DashboardView {
         const notesTextarea = document.getElementById('notes');
         const deleteButton = document.getElementById('delete-entry');
 
-        // Aseta lomakkeen arvot
+        // Set form values
         if (dateInput) dateInput.value = isoDate;
         if (entryIdInput) entryIdInput.value = '';
 
-        // Muotoile päivämäärä näyttömuotoon
+        // Format date for display
         const formattedDate = DateUtils.formatDisplayDate(isoDate);
-        console.log("Muotoiltu näyttöpäivämäärä:", formattedDate);
+        console.log("Formatted display date:", formattedDate);
 
         const heading = modal.querySelector('h2');
-        if (heading) heading.textContent = `Uusi merkintä - ${formattedDate}`;
+        if (heading) heading.textContent = `New Entry - ${formattedDate}`;
 
-        // Tyhjennä lomake
+        // Clear form
         if (moodSlider) {
             moodSlider.value = 3;
             this.updateMoodIcon(3);
@@ -304,12 +334,16 @@ export default class DashboardView {
 
         if (deleteButton) deleteButton.style.display = 'none';
 
-        // Näytä modaali
+        // Show modal
         modal.style.display = 'block';
     }
 
+    /**
+     * Shows the modal for editing an existing entry
+     * @param {Object} entry - The entry object to edit
+     */
     static showEntryModal(entry) {
-        console.log("showEntryModal kutsuttu merkinnällä:", entry);
+        console.log("showEntryModal called with entry:", entry);
 
         const modal = document.getElementById('entry-modal');
         if (!modal) return;
@@ -322,22 +356,22 @@ export default class DashboardView {
         const notesTextarea = document.getElementById('notes');
         const deleteButton = document.getElementById('delete-entry');
 
-        // Varmista, että päivämäärä on ISO-muodossa
+        // Ensure date is in ISO format
         const isoDate = DateUtils.toISODate(entry.entry_date);
-        console.log("Merkinnän ISO-muotoinen päivämäärä:", isoDate);
+        console.log("Entry's ISO-formatted date:", isoDate);
 
-        // Aseta lomakkeen arvot
+        // Set form values
         if (dateInput) dateInput.value = isoDate;
         if (entryIdInput) entryIdInput.value = entry.entry_id || '';
 
-        // Muotoile päivämäärä näyttömuotoon
+        // Format date for display
         const formattedDate = DateUtils.formatDisplayDate(isoDate);
-        console.log("Muotoiltu näyttöpäivämäärä:", formattedDate);
+        console.log("Formatted display date:", formattedDate);
 
         const heading = modal.querySelector('h2');
-        if (heading) heading.textContent = `Päiväkirjamerkintä - ${formattedDate}`;
+        if (heading) heading.textContent = `Diary Entry - ${formattedDate}`;
 
-        // Aseta mieliala
+        // Set mood
         if (moodSlider) {
             const moodValues = {
                 'Sad': 1,
@@ -352,18 +386,23 @@ export default class DashboardView {
             this.updateMoodIcon(sliderValue);
         }
 
-        // Aseta muut tiedot
+        // Set other information
         if (weightInput) weightInput.value = entry.weight || '';
         if (sleepInput) sleepInput.value = entry.sleep_hours || '';
         if (notesTextarea) notesTextarea.value = entry.notes || '';
 
-        // Näytä poistopainike olemassa olevalle merkinnälle
+        // Show delete button for existing entries
         if (deleteButton) deleteButton.style.display = 'block';
 
-        // Näytä modaali
+        // Show modal
         modal.style.display = 'block';
     }
 
+    /**
+     * Shows the modal listing all entries for a specific date
+     * @param {string} date - The date to show entries for
+     * @param {Array} entries - Array of entry objects for the date
+     */
     static showEntriesListModal(date, entries) {
         const modal = document.getElementById('entries-list-modal');
         if (!modal) return;
@@ -371,27 +410,31 @@ export default class DashboardView {
         const modalContent = modal.querySelector('.entries-list-modal-content');
         if (!modalContent) return;
 
-        // Varmista, että päivämäärä on ISO-muodossa
+        // Ensure date is in ISO format
         const isoDate = DateUtils.toISODate(date);
 
-        // Renderöi merkintälista
+        // Render entries list
         modalContent.innerHTML = EntriesList.render(isoDate, entries);
 
-        // Alusta merkintälistan toiminnallisuus
+        // Initialize entries list functionality
         EntriesList.initialize(isoDate, entries);
 
-        // Näytä modaali
+        // Show modal
         modal.style.display = 'block';
     }
 
+    /**
+     * Saves the current entry form data (create or update)
+     * @returns {Promise<void>}
+     */
     static async saveEntry() {
         try {
             const entryId = document.getElementById('entry-id')?.value;
             const entryDate = document.getElementById('entry-date')?.value;
 
-            // Varmista, että päivämäärä on ISO-muodossa
+            // Ensure date is in ISO format
             const isoDate = DateUtils.toISODate(entryDate);
-            console.log("Tallennetaan merkintä, päivämäärä:", isoDate);
+            console.log("Saving entry, date:", isoDate);
 
             const entryData = {
                 entry_date: isoDate,
@@ -401,76 +444,96 @@ export default class DashboardView {
                 notes: document.getElementById('notes')?.value
             };
 
-            console.log("Tallennetaan merkintä:", entryData);
+            console.log("Saving entry:", entryData);
 
-            // Päivitä tai luo uusi merkintä
+            // Update or create new entry
             if (entryId) {
                 await entryService.updateEntry(entryId, entryData);
             } else {
                 await entryService.createEntry(entryData);
             }
 
-            // Päivitä näkymät
+            // Update views
             await this.refreshData();
 
-            // Sulje modaali
+            // Close modal
             document.getElementById('entry-modal').style.display = 'none';
 
-            // Näytä ilmoitus
-            this.showSuccessNotification(entryId ? 'Merkintä päivitetty' : 'Uusi merkintä lisätty');
+            // Show notification
+            this.showSuccessNotification(entryId ? 'Entry updated' : 'New entry added');
 
         } catch (error) {
-            console.error('Virhe tallennettaessa merkintää:', error);
-            this.showErrorNotification('Merkinnän tallentaminen epäonnistui');
+            console.error('Error saving entry:', error);
+            this.showErrorNotification('Failed to save entry');
         }
     }
 
+    /**
+     * Deletes the current entry after confirmation
+     * @returns {Promise<void>}
+     */
     static async deleteEntry() {
         const entryId = document.getElementById('entry-id')?.value;
         if (!entryId) return;
 
-        if (confirm('Haluatko varmasti poistaa tämän merkinnän?')) {
+        if (confirm('Are you sure you want to delete this entry?')) {
             try {
                 await entryService.deleteEntry(entryId);
 
-                // Päivitä näkymät
+                // Update views
                 await this.refreshData();
 
-                // Sulje modaali
+                // Close modal
                 document.getElementById('entry-modal').style.display = 'none';
 
-                // Näytä ilmoitus
-                this.showSuccessNotification('Merkintä poistettu');
+                // Show notification
+                this.showSuccessNotification('Entry deleted');
 
             } catch (error) {
-                console.error('Virhe poistettaessa merkintää:', error);
-                this.showErrorNotification('Merkinnän poistaminen epäonnistui');
+                console.error('Error deleting entry:', error);
+                this.showErrorNotification('Failed to delete entry');
             }
         }
     }
 
+    /**
+     * Refreshes all data in the dashboard
+     * Clears cache and fetches updated entries
+     * @returns {Promise<void>}
+     */
     static async refreshData() {
-        // Tyhjennä välimuisti ja hae päivitetyt merkinnät
+        // Clear cache and fetch updated entries
         entryService.clearCache();
         const entries = await entryService.getAllEntries();
 
-        // Julkaise päivitystapahtuma - tämä riittää päivittämään kaikki komponentit
+        // Publish update event - this is enough to update all components
         eventBus.publish('entries:updated', entries);
     }
 
+    /**
+     * Shows a success notification with the given message
+     * @param {string} message - The success message to display
+     */
     static showSuccessNotification(message) {
         console.log("Success: " + message);
     }
 
+    /**
+     * Shows an error notification with the given message
+     * @param {string} message - The error message to display
+     */
     static showErrorNotification(message) {
         console.error("Error: " + message);
     }
 
+    /**
+     * Cleans up event listeners and resets state when component is unmounted
+     */
     static cleanup() {
-        // Merkitään näkymä ei-alustetuksi
+        // Mark view as not initialized
         this.isInitialized = false;
 
-        // Poista tapahtumankäsittelijät
+        // Remove event handlers
         const form = document.getElementById('entry-form');
         if (form) {
             form.removeAttribute('data-initialized');

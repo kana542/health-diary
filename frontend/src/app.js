@@ -2,40 +2,40 @@ import './style.css';
 import Router from './core/Router.js';
 import auth from './core/Auth.js';
 
-// Näkymät
+// Views
 import LoginView from './views/LoginView.js';
 import RegisterView from './views/RegisterView.js';
 import DashboardView from './views/DashboardView.js';
 
-// Luo reititin
+// Create router
 const router = new Router();
 
-// Määrittele reitit
+// Define routes
 router.addRoute('/login', LoginView)
       .addRoute('/register', RegisterView)
       .addRoute('/dashboard', DashboardView, true)
       .addRoute('/', {
-        render: () => '<div class="welcome-screen">Tervetuloa Health Diary -sovellukseen! <a href="/login">Kirjaudu sisään</a></div>'
+        render: () => '<div class="welcome-screen">Welcome to the Health Diary application! <a href="/login">Log in</a></div>'
       })
       .addRoute('*', {
-        render: () => '<div class="not-found">404 - Sivua ei löydy <a href="/">Palaa etusivulle</a></div>'
+        render: () => '<div class="not-found">404 - Page not found <a href="/">Return to home page</a></div>'
       });
 
-// Tarkista autentikointi ja ohjaa tarvittaessa
+// Check authentication and redirect if necessary
 if (auth.isAuthenticated()) {
-    // Jos käyttäjä on kirjautunut sisään, salli dashboard
+    // If user is logged in, allow dashboard access
     router.navigate('/dashboard');
 } else {
-    // Tarkista nykyinen sijainti
+    // Check current location
     const currentPath = window.location.pathname;
-    // Salli pysyminen rekisteröintisivulla ja etusivulla kirjautumattomana
+    // Allow staying on registration page and home page without login
     if (currentPath === '/register' || currentPath === '/') {
         router.navigate(currentPath);
     } else {
-        // Muuten ohjaa kirjautumissivulle
+        // Otherwise redirect to login page
         router.navigate('/login');
     }
 }
 
-// Käynnistä reititin
+// Start the router
 router.start();

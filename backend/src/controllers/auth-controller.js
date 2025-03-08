@@ -6,28 +6,40 @@ import logger from '../utils/logger.js';
 import { customError } from '../middlewares/error-handler.js';
 
 /**
- * Käsittelee käyttäjän kirjautumisen
+ * Handles user login
+ * Validates username and password, authenticates the user, and generates a JWT token
+ * @param {Object} req - The request object
+ * @param {Object} res - The response object
+ * @param {Function} next - The next middleware function
+ * @returns {Object} JSON response with token and user data or error
  */
 const login = async (req, res, next) => {
+   // Extract username and password from request body
    const { username, password } = req.body;
 
+   // Validate that both username and password are provided
    if (!username || !password) {
-      logger.warn(`Kirjautumisyritys ilman käyttäjätunnusta tai salasanaa`);
+      logger.warn(`Login attempt without username or password`);
       return next(customError('Username and password are required.', 400));
    }
 
    try {
-      logger.info(`Kirjautumisyritys käyttäjänimellä: ${username}`);
+      logger.info(`Login attempt with username: ${username}`);
+
+      // Query the database for the user with the provided username
       const user = await selectUserByUsername(username);
 
+      // Check if user exists
       if (!user) {
-         logger.warn(`Kirjautuminen epäonnistui: käyttäjää '${username}' ei löydy`);
+         logger.warn(`Login failed: user '${username}' not found`);
          return next(customError('Bad username/password.', 401));
       }
 
+      // Compare the provided password with the stored hash
       const match = await bcrypt.compare(password, user.password);
 
       if (match) {
+         // Create user object for token payload (excludes sensitive information)
          const userForToken = {
             user_id: user.user_id,
             username: user.username,
@@ -35,11 +47,14 @@ const login = async (req, res, next) => {
             user_level: user.user_level,
          };
 
+         // Generate JWT token with user data and configure expiration
          const token = jwt.sign(userForToken, process.env.JWT_SECRET, {
-            expiresIn: process.env.JWT_EXPIRES_IN || "24h",
+            expiresIn: process.env.JWT_EXPIRES_IN || "24h", // Default to 24 hours if not specified in .env
          });
 
-         logger.info(`Käyttäjä '${username}' kirjautui onnistuneesti (ID: ${user.user_id})`);
+         logger.info(`User '${username}' logged in successfully (ID: ${user.user_id})`);
+
+         // Return successful response with token and user data
          return res.json({
             message: "Login successful",
             user: userForToken,
@@ -47,23 +62,34 @@ const login = async (req, res, next) => {
          });
       }
 
-      logger.warn(`Kirjautuminen epäonnistui: väärä salasana käyttäjälle '${username}'`);
+      // Password doesn't match
+      logger.warn(`Login failed: incorrect password for user '${username}'`);
       return next(customError('Bad username/password.', 401));
    } catch (error) {
-      logger.error("Kirjautumisvirhe:", error);
+      // Handle any unexpected errors
+      logger.error("Login error:", error);
       return next(customError('Server error', 500));
    }
 };
 
 /**
- * Hakee kirjautuneen käyttäjän tiedot
+ * Retrieves the logged-in user's information
+ * Uses the user object attached to the request by the authentication middleware
+ * @param {Object} req - The request object containing authenticated user data
+ * @param {Object} res - The response object
+ * @param {Function} next - The next middleware function
+ * @returns {Object} JSON response with user data or error
  */
 const getMe = async (req, res, next) => {
    try {
-      logger.info(`Käyttäjän tiedot haettu: ${req.user.username} (ID: ${req.user.user_id})`);
+      // Log the retrieval of user information
+      logger.info(`User information retrieved: ${req.user.username} (ID: ${req.user.user_id})`);
+
+      // Return the user object that was attached to the request by authentication middleware
       res.json(req.user);
    } catch (error) {
-      logger.error("getMe-virhe:", error);
+      // Handle any unexpected errors
+      logger.error("getMe error:", error);
       next(customError('Server error', 500));
    }
 };

@@ -52,7 +52,6 @@
    display: flex;
  }
 
- /* Make both calendar and chart the same height */
  .calendar, .chart {
    width: 100%;
    height: auto;
@@ -60,7 +59,6 @@
    max-height: 430px;
  }
 
- /* Kirjaudu ulos -nappi */
  .btn-logout {
    background: #ff5869;
    color: white;
@@ -76,7 +74,6 @@
    background: #ff3f53;
  }
 
- /* Modaali-tyylit */
  .modal {
    display: none;
    position: fixed;
@@ -120,7 +117,6 @@
    font-weight: 600;
  }
 
- /* Mieliala slider tyylit */
  .mood-slider-container {
    margin-bottom: 25px;
  }
@@ -227,7 +223,6 @@
    background: #ff3f53;
  }
 
- /* Merkintöjen listatyylitykset */
  .entries-list-modal-content {
    width: 90%;
    max-width: 550px;
@@ -275,7 +270,7 @@
  .entry-item-content {
    flex: 1;
    cursor: pointer;
-   min-width: 0; /* Estää flexbox-elementin levenemisen liikaa */
+   min-width: 0;
  }
 
  .entry-time {
@@ -323,7 +318,6 @@
    padding: 15px 0;
  }
 
- /* Päivitä kalenterityylit näyttämään merkintämäärät */
  .date.multi-entry {
    position: relative;
  }
@@ -343,7 +337,6 @@
    justify-content: center;
  }
 
- /* Poistonapin tyylit */
  .delete-entry-button {
    width: 36px;
    height: 36px;
@@ -390,7 +383,6 @@
    font-style: italic;
  }
 
- /* Responsiivisuusasetukset */
  @media (max-width: 1000px) {
    .dashboard-container {
      width: 95%;

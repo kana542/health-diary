@@ -107,7 +107,7 @@ const getEntryById = async (req, res) => {
  */
 const postEntry = async (req, res, next) => {
   try {
-    // Varmista, että päivämäärä on ISO-muodossa
+    // Ensure that the date is in ISO format
     const normalizedDate = normalizeDateString(req.body.entry_date);
 
     // Prepare new entry object

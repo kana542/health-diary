@@ -10,6 +10,10 @@ export class Calendar {
     static entriesUpdateUnsubscribe = null;
     static entriesUpdatedSubscribed = false;
 
+    /**
+     * Renders the calendar HTML structure
+     * @returns {string} HTML structure for the calendar
+     */
     static render() {
         return `
         <div class="calendar">
@@ -23,26 +27,30 @@ export class Calendar {
                 </button>
             </div>
             <div class="days">
-                <div class="day">Ma</div>
-                <div class="day">Ti</div>
-                <div class="day">Ke</div>
-                <div class="day">To</div>
-                <div class="day">Pe</div>
-                <div class="day">La</div>
-                <div class="day">Su</div>
+                <div class="day">Mon</div>
+                <div class="day">Tue</div>
+                <div class="day">Wed</div>
+                <div class="day">Thu</div>
+                <div class="day">Fri</div>
+                <div class="day">Sat</div>
+                <div class="day">Sun</div>
             </div>
             <div class="dates" id="dates"></div>
         </div>
         `;
     }
 
+    /**
+     * Initializes the calendar component and sets up event listeners
+     * Creates the calendar UI and registers event handlers
+     */
     static initialize() {
         const monthYearElement = document.querySelector(".monthYear");
         const datesElement = document.querySelector("#dates");
         const prevBtn = document.querySelector("#prevBtn");
         const nextBtn = document.querySelector("#nextBtn");
 
-        // Lataa merkinnät jos niitä ei ole vielä ladattu
+        // Load entries if they haven't been loaded yet
         if (!this.entries || this.entries.length === 0) {
             this.loadEntries();
         }
@@ -51,28 +59,28 @@ export class Calendar {
             const currentYear = this.currentDate.getFullYear();
             const currentMonth = this.currentDate.getMonth();
 
-            // Hae kuukauden tiedot
+            // Get month information
             const { firstDay, lastDay, daysInMonth } = DateUtils.getMonthRange(currentYear, currentMonth);
 
-            // Määritä kuukauden ensimmäisen päivän viikonpäivä (0 = ma, 6 = su)
+            // Determine the weekday of the first day of the month (0 = Mon, 6 = Sun)
             const firstDayDate = new Date(currentYear, currentMonth, 1);
             let firstDayIndex = firstDayDate.getDay() - 1;
             if (firstDayIndex < 0) firstDayIndex = 6;
 
-            // Määritä kuukauden viimeisen päivän viikonpäivä
+            // Determine the weekday of the last day of the month
             let lastDayIndex = new Date(currentYear, currentMonth + 1, 0).getDay() - 1;
             if (lastDayIndex < 0) lastDayIndex = 6;
 
-            // Näytä kuukausi ja vuosi
+            // Display month and year
             const monthYearString = this.currentDate.toLocaleDateString(
-                "fi-FI",
+                "en-US",
                 { month: "long", year: "numeric" }
             );
             monthYearElement.textContent = monthYearString;
 
             let datesHTML = "";
 
-            // Edellisen kuukauden päivät
+            // Previous month's days
             const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
             for (let i = 0; i < firstDayIndex; i++) {
                 const dayNum = prevMonthLastDay - firstDayIndex + i + 1;
@@ -81,12 +89,12 @@ export class Calendar {
 
             const today = DateUtils.today();
 
-            // Tämän kuukauden päivät
+            // Current month's days
             for (let i = 1; i <= daysInMonth; i++) {
-                // Käytä DateUtils-luokkaa päivämäärän luomiseen
+                // Use DateUtils class to create date
                 const dateString = DateUtils.createDate(currentYear, currentMonth, i);
 
-                // Etsi päivän merkinnät
+                // Find entries for the day
                 const dayEntries = this.entries.filter(entry => {
                     if (!entry.entry_date) return false;
                     return DateUtils.isSameDay(entry.entry_date, dateString);
@@ -107,7 +115,7 @@ export class Calendar {
                 `;
             }
 
-            // Seuraavan kuukauden päivät
+            // Next month's days
             const nextDays = 7 - ((firstDayIndex + daysInMonth) % 7);
             if (nextDays < 7) {
                 for (let i = 1; i <= nextDays; i++) {
@@ -117,7 +125,7 @@ export class Calendar {
 
             datesElement.innerHTML = datesHTML;
 
-            // Lisää tapahtumankäsittelijät kalenteripäiville
+            // Add event handlers to calendar days
             document.querySelectorAll('.date:not(.inactive)').forEach(dateElement => {
                 dateElement.addEventListener('click', () => {
                     const selectedDate = dateElement.getAttribute('data-date');
@@ -127,18 +135,18 @@ export class Calendar {
             });
         };
 
-        // Päivitä kalenteri ensimmäistä kertaa
+        // Update calendar for the first time
         this.updateCalendarFunction();
 
-        // Julkaise tieto nykyisestä kuukaudesta
+        // Publish current month information
         this.publishCurrentMonth();
 
-        // Lisää tapahtumankäsittelijät edellinen/seuraava-painikkeille
+        // Add event handlers for previous/next buttons
         prevBtn.addEventListener("click", () => {
             this.currentDate.setMonth(this.currentDate.getMonth() - 1);
             this.updateCalendarFunction();
 
-            // Julkaise tieto kuukauden vaihdosta
+            // Publish month change information
             this.publishCurrentMonth();
         });
 
@@ -146,28 +154,28 @@ export class Calendar {
             this.currentDate.setMonth(this.currentDate.getMonth() + 1);
             this.updateCalendarFunction();
 
-            // Julkaise tieto kuukauden vaihdosta
+            // Publish month change information
             this.publishCurrentMonth();
         });
 
-        // Rekisteröi merkintöjen päivityksen tapahtumankäsittelijä vain kerran
+        // Register entries update event handler only once
         if (!this.entriesUpdatedSubscribed) {
-            // Poista aiemmat tilaukset jos niitä on
+            // Remove previous subscriptions if they exist
             if (this.entriesUpdateUnsubscribe) {
                 this.entriesUpdateUnsubscribe();
             }
 
-            // Rekisteröi uusi tilaaja ja tallenna unsubscribe-funktio
+            // Register new subscriber and store unsubscribe function
             this.entriesUpdateUnsubscribe = eventBus.subscribe('entries:updated', async (entries) => {
                 if (entries) {
                     this.entries = entries;
-                    console.log("Calendar: Merkinnät päivitetty, päivitetään kalenteri");
+                    console.log("Calendar: Entries updated, refreshing calendar");
                 } else {
                     await this.loadEntries();
                 }
                 this.updateCalendarFunction();
 
-                // Päivitä myös kaavio uusilla merkinnöillä
+                // Update chart with new entries as well
                 this.publishCurrentMonth();
             });
 
@@ -175,7 +183,10 @@ export class Calendar {
         }
     }
 
-    // Uusi metodi kuukauden tietojen julkaisemiseen
+    /**
+     * Publishes current month information to the event bus
+     * Allows other components to react to month changes
+     */
     static publishCurrentMonth() {
         eventBus.publish('calendar:month-changed', {
             year: this.currentDate.getFullYear(),
@@ -184,61 +195,78 @@ export class Calendar {
         });
     }
 
+    /**
+     * Loads entries from the server with caching
+     * @returns {Promise<Array>} Array of entries
+     */
     static async loadEntries() {
         const now = new Date();
-        const cacheTime = 30 * 1000; // 30 sekuntia
+        const cacheTime = 30 * 1000; // 30 seconds
 
         try {
             if (!this.entries || !this.entries.length || !this.entriesLastLoaded ||
                 (now - this.entriesLastLoaded) > cacheTime) {
-                console.log("Calendar: Ladataan merkinnät palvelimelta");
+                console.log("Calendar: Loading entries from server");
                 this.entries = await entryService.getAllEntries();
                 this.entriesLastLoaded = now;
             }
             return this.entries;
         } catch (error) {
-            console.error('Virhe haettaessa merkintöjä:', error);
+            console.error('Error fetching entries:', error);
             this.entries = [];
             return [];
         }
     }
 
+    /**
+     * Handles date click events in the calendar
+     * Triggers appropriate events based on whether the date has entries
+     * @param {string} date - The selected date
+     * @param {number} entriesCount - Number of entries for the selected date
+     */
     static handleDateClick(date, entriesCount) {
-        console.log("Kalenterissa klikattu päivä:", date);
+        console.log("Date clicked in calendar:", date);
 
-        // Varmista, että päivämäärä on aina ISO-muodossa
+        // Ensure date is always in ISO format
         const isoDate = DateUtils.toISODate(date);
 
-        // Etsi päivän merkinnät
+        // Find entries for the day
         const dayEntries = this.entries.filter(entry => {
             if (!entry.entry_date) return false;
             return DateUtils.isSameDay(entry.entry_date, isoDate);
         });
 
-        console.log("Päivämäärä ennen tapahtuman julkaisua:", isoDate);
+        console.log("Date before publishing event:", isoDate);
 
         if (entriesCount >= 1) {
-            // Jos päivällä on merkintöjä, näytä merkintälista
+            // If the day has entries, show the entry list
             eventBus.publish('entries:list', { date: isoDate, entries: dayEntries });
         } else {
-            // Jos päivällä ei ole merkintöjä, näytä uuden merkinnän lomake
+            // If the day has no entries, show the new entry form
             eventBus.publish('date:selected', isoDate);
         }
     }
 
+    /**
+     * Manually refreshes the calendar display
+     * Updates both the calendar UI and publishes the current month
+     */
     static refreshCalendar() {
         if (this.updateCalendarFunction) {
-            console.log("Calendar: Päivitetään kalenteri manuaalisesti");
+            console.log("Calendar: Manually refreshing calendar");
             this.updateCalendarFunction();
 
-            // Päivitä myös kuukauden tieto
+            // Update month information as well
             this.publishCurrentMonth();
         }
     }
 
-    // Siivousfunktio komponenttien tuhoamisen yhteydessä
+    /**
+     * Cleans up event listeners when the component is destroyed
+     * Prevents memory leaks by properly unsubscribing from events
+     */
     static cleanup() {
-        // Peruuta tapahtumankäsittelijät
+        // Cancel event handlers
         if (this.entriesUpdateUnsubscribe) {
             this.entriesUpdateUnsubscribe();
             this.entriesUpdateUnsubscribe = null;

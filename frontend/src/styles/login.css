@@ -82,7 +82,6 @@
    text-decoration: underline;
 }
 
-/* Virheilmoituksen tyylit */
 .error-message {
     background-color: rgba(255, 87, 87, 0.3);
     border-radius: 5px;
@@ -93,7 +92,6 @@
     font-size: 14px;
 }
 
-/* Onnistumisviestin tyylit */
 .success-message {
     background-color: rgba(56, 176, 0, 0.3);
     border-radius: 5px;
@@ -104,12 +102,10 @@
     font-size: 14px;
 }
 
-/* Virheilmoitusten selkeämpi näkyvyys */
 .input-box.has-error input {
     border-color: rgba(255, 87, 87, 0.8);
 }
 
-/* Kenttäkohtainen virheilmoitus */
 .field-error {
     color: rgba(255, 87, 87, 0.9);
     font-size: 12px;

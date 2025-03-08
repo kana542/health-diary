@@ -1,174 +1,249 @@
-import bcrypt from 'bcryptjs';
 import logger from '../utils/logger.js';
-import { customError } from '../middlewares/error-handler.js';
 
 import {
-  insertUser,
-  selectAllUsers,
-  selectUserById,
-  updateUser,
-  deleteUser as deleteUserFromModel,
-} from '../models/user-model.js';
+  selectAllEntries,
+  selectEntryById,
+  selectEntriesByUserId,
+  insertEntry,
+  updateEntry,
+  deleteEntry,
+} from '../models/entry-model.js';
 
 /**
- * Retrieves all users from the database.
+ * Normalizes a date string to the format YYYY-MM-DD.
+ * Removes time component from ISO-formatted dates or returns the original date string.
+ *
+ * @param {string} dateString - The input date string to normalize.
+ * @returns {string|null} - The normalized date string or null if input is invalid.
+ */
+const normalizeDateString = (dateString) => {
+  // Return null for empty or undefined date strings
+  if (!dateString) return null;
+
+  // Remove time component from ISO-formatted date
+  if (dateString.includes('T')) {
+    return dateString.split('T')[0];
+  }
+
+  return dateString;
+};
+
+/**
+ * Retrieves all entries for the authenticated user.
+ * Handles database query and error management.
  *
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
- * @returns {Object} JSON response with list of users or error message
  */
-const getUsers = async (req, res) => {
+const getEntries = async (req, res) => {
   try {
-    // Fetch all users from the database
-    logger.info('Retrieving all users');
-    const users = await selectAllUsers();
+    // Log the attempt to fetch entries for a specific user
+    logger.info(`Fetching entries for user ID: ${req.user.user_id}`);
 
-    // Return users list
-    res.json(users);
+    // Retrieve entries specific to the authenticated user
+    const entries = await selectEntriesByUserId(req.user.user_id);
+
+    // Log the number of entries retrieved
+    logger.info(`Returning ${entries.length} entries for the user`);
+
+    // Send entries as JSON response
+    res.json(entries);
   } catch (error) {
-    // Log and handle any server-side errors
-    logger.error('Error retrieving users:', error);
-    res.status(500).json({message: error.message});
+    // Log any errors during entry retrieval
+    logger.error('Error fetching entries:', error);
+
+    // Send server error response
+    res.status(500).json({ message: error.message });
   }
 };
 
 /**
- * Retrieves a specific user by their ID.
+ * Retrieves a specific entry by ID, with authorization check.
+ * Ensures the entry belongs to the authenticated user.
  *
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
- * @returns {Object} JSON response with user details or error message
  */
-const getUserById = async (req, res) => {
+const getEntryById = async (req, res) => {
   try {
-    // Attempt to find user by ID
-    logger.info(`Retrieving user with ID: ${req.params.id}`);
-    const user = await selectUserById(req.params.id);
+    // Log the attempt to fetch a specific entry
+    logger.info(`Fetching entry by ID: ${req.params.id}`);
 
-    // Check if user exists
-    if (user) {
-      res.json(user);
-    } else {
-      logger.warn(`User not found with ID: ${req.params.id}`);
-      res.status(404).json({message: 'User not found'});
+    // Retrieve the entry from the database
+    const entry = await selectEntryById(req.params.id);
+
+    // Check if entry exists
+    if (!entry) {
+      logger.warn(`Entry with ID ${req.params.id} not found`);
+      return res.status(404).json({ message: 'Entry not found' });
     }
+
+    // Verify the entry belongs to the authenticated user
+    if (entry.user_id !== req.user.user_id) {
+      logger.warn(`Unauthorized access attempt: User ${req.user.user_id} tried to access entry ${req.params.id}`);
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    // Log successful entry retrieval
+    logger.info(`Returning entry with ID ${req.params.id} (Date: ${entry.entry_date})`);
+
+    // Send entry as JSON response
+    res.json(entry);
   } catch (error) {
-    // Log and handle any server-side errors
-    logger.error('Error retrieving user:', error);
-    res.status(500).json({message: error.message});
+    // Log any errors during entry retrieval
+    logger.error('Error fetching entry by ID:', error);
+
+    // Send server error response
+    res.status(500).json({ message: error.message });
   }
 };
 
 /**
- * Adds a new user to the database.
- * Validates input, hashes password, and creates user record.
+ * Creates a new entry for the authenticated user.
+ * Validates input and normalizes date before insertion.
  *
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
- * @returns {Object} JSON response with user creation status or error message
  */
-const addUser = async (req, res, next) => {
+const postEntry = async (req, res, next) => {
   try {
-    // Destructure required fields from request body
-    const {username, password, email} = req.body;
+    // Ensure that the date is in ISO format
+    const normalizedDate = normalizeDateString(req.body.entry_date);
 
-    // Hash password
-    const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
-
-    // Prepare user data for database insertion
-    const newUser = {
-      username,
-      password: passwordHash,
-      email,
+    // Prepare new entry object
+    const newEntry = {
+      user_id: req.user.user_id,
+      entry_date: normalizedDate,
+      mood: req.body.mood,
+      weight: req.body.weight,
+      sleep_hours: req.body.sleep_hours,
+      notes: req.body.notes,
     };
 
-    // Insert user into database
-    logger.info(`Attempting to create user: ${username}`);
-    const result = await insertUser(newUser);
+    // Log entry creation attempt
+    logger.info(`Creating a new entry for user ${req.user.user_id} (Date: ${normalizedDate})`);
 
-    // Return successful creation response
-    logger.info(`User created successfully with ID: ${result}`);
+    // Insert entry into database
+    const result = await insertEntry(newEntry);
+
+    // Log successful entry creation
+    logger.info(`Entry created successfully, ID: ${result}`);
+
+    // Send success response with new entry ID
     res.status(201).json({
-      message: 'User added.',
-      user_id: result,
+      message: 'Entry created successfully',
+      entry_id: result,
     });
   } catch (error) {
-    // Log and handle any server-side errors during user creation
-    logger.error('Error in user registration:', error);
-    next(customError(error.message || 'Error registering user', 500));
+    // Log any errors during entry creation
+    logger.error('Error creating entry:', error);
+    next(customError(error.message || 'Error creating entry', 500));
   }
 };
 
 /**
- * Updates an existing user's information.
- * Allows updating username, email, and password.
+ * Updates an existing entry, with authorization and validation.
+ * Ensures only the entry owner can modify the entry.
  *
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
- * @returns {Object} JSON response with update status or error message
  */
-const editUser = async (req, res) => {
-  const {username, password, email} = req.body;
-
+const updateEntryById = async (req, res) => {
   try {
-    // Prepare update data
-    let updateData = {
-      username,
-      email,
-    };
+    // Log update attempt
+    logger.info(`Updating entry with ID ${req.params.id}`);
 
-    // Hash password if provided
-    if (password) {
-      const saltRounds = 10;
-      updateData.password = await bcrypt.hash(password, saltRounds);
+    // Retrieve existing entry
+    const existingEntry = await selectEntryById(req.params.id);
+
+    // Check if entry exists
+    if (!existingEntry) {
+      logger.warn(`Entry with ID ${req.params.id} not found for update`);
+      return res.status(404).json({ message: 'Entry not found' });
     }
 
-    // Attempt to update user
-    logger.info(`Updating user with ID: ${req.params.id}`);
-    const result = await updateUser(req.params.id, updateData);
+    // Verify the entry belongs to the authenticated user
+    if (existingEntry.user_id !== req.user.user_id) {
+      logger.warn(`Unauthorized update attempt: User ${req.user.user_id} tried to update entry ${req.params.id}`);
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    // Prepare updated data
+    const updatedData = { ...req.body };
+
+    // Normalize date if provided
+    if (updatedData.entry_date) {
+      updatedData.entry_date = normalizeDateString(updatedData.entry_date);
+    }
+
+    // Log update details
+    logger.info(`Updating entry with ID ${req.params.id}, data:`, updatedData);
+
+    // Perform update
+    const result = await updateEntry(req.params.id, updatedData);
 
     // Check update result
     if (result) {
-      logger.info(`User ${req.params.id} updated successfully`);
-      res.json({message: 'User updated.'});
+      logger.info(`Entry with ID ${req.params.id} updated successfully`);
+      res.json({ message: 'Entry updated successfully' });
     } else {
-      logger.warn(`Update failed - User not found with ID: ${req.params.id}`);
-      res.status(404).json({message: 'User not found'});
+      logger.warn(`Entry with ID ${req.params.id} could not be updated`);
+      res.status(404).json({ message: 'Entry not found' });
     }
   } catch (error) {
-    // Log and handle any server-side errors during update
-    logger.error('Error updating user:', error);
-    res.status(500).json({message: error.message});
+    // Log any errors during entry update
+    logger.error('Error updating entry:', error);
+
+    // Send server error response
+    res.status(500).json({ message: error.message });
   }
 };
 
 /**
- * Deletes a user from the database.
+ * Deletes an entry, with authorization check.
+ * Ensures only the entry owner can delete the entry.
  *
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
- * @returns {Object} JSON response with deletion status or error message
  */
-const deleteUser = async (req, res) => {
+const deleteEntryById = async (req, res) => {
   try {
-    // Attempt to delete user
-    logger.info(`Attempting to delete user with ID: ${req.params.id}`);
-    const result = await deleteUserFromModel(req.params.id);
+    // Log deletion attempt
+    logger.info(`Deleting entry with ID ${req.params.id}`);
+
+    // Retrieve existing entry
+    const existingEntry = await selectEntryById(req.params.id);
+
+    // Check if entry exists
+    if (!existingEntry) {
+      logger.warn(`Entry with ID ${req.params.id} not found for deletion`);
+      return res.status(404).json({ message: 'Entry not found' });
+    }
+
+    // Verify the entry belongs to the authenticated user
+    if (existingEntry.user_id !== req.user.user_id) {
+      logger.warn(`Unauthorized deletion attempt: User ${req.user.user_id} tried to delete entry ${req.params.id}`);
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    // Perform deletion
+    const result = await deleteEntry(req.params.id);
 
     // Check deletion result
     if (result) {
-      logger.info(`User ${req.params.id} deleted successfully`);
-      res.json({message: 'User deleted.'});
+      logger.info(`Entry with ID ${req.params.id} deleted successfully`);
+      res.json({ message: 'Entry deleted successfully' });
     } else {
-      logger.warn(`Delete failed - User not found with ID: ${req.params.id}`);
-      res.status(404).json({message: 'User not found'});
+      logger.warn(`Entry with ID ${req.params.id} could not be deleted`);
+      res.status(404).json({ message: 'Entry not found' });
     }
   } catch (error) {
-    // Log and handle any server-side errors during deletion
-    logger.error('Error deleting user:', error);
-    res.status(500).json({message: error.message});
+    // Log any errors during entry deletion
+    logger.error('Error deleting entry:', error);
+
+    // Send server error response
+    res.status(500).json({ message: error.message });
   }
 };
 
-export {getUsers, getUserById, addUser, editUser, deleteUser};
+export { getEntries, getEntryById, postEntry, updateEntryById, deleteEntryById };

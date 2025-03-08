@@ -1,78 +1,86 @@
 import HttpClient from '../core/HttpClient.js';
 import { DateUtils } from '../utils/DateUtils.js';
 
+/**
+ * Service for managing diary entries
+ * Handles API communication, caching, and data formatting
+ */
 class EntryService {
+    /**
+     * Creates a new EntryService instance
+     * Initializes HTTP client and caching mechanism
+     */
     constructor() {
         this.httpClient = new HttpClient();
         this.entriesCache = null;
         this.lastFetchTime = null;
-        this.cacheLifetime = 30000; // 30 sekuntia (nostettu 5s -> 30s)
-        this.pendingRequest = null; // Lisätty muuttuja kesken olevan pyynnön käsittelyyn
+        this.cacheLifetime = 30000; // 30 seconds (increased from 5s to 30s)
+        this.pendingRequest = null; // Added variable to handle pending requests
     }
 
     /**
-     * Hakee kaikki merkinnät - käyttää välimuistia ja Promise-pohjaista välimuistimekanismia
-     * @returns {Promise<Array>} Merkinnät
+     * Retrieves all entries - uses caching and Promise-based caching mechanism
+     * @returns {Promise<Array>} Entries
      */
     async getAllEntries() {
         const now = new Date();
 
-        // Jos välimuistissa on tuoretta dataa, palauta se
+        // If cache contains fresh data, return it
         if (this.entriesCache && this.lastFetchTime &&
             now - this.lastFetchTime < this.cacheLifetime) {
-            console.log("EntryService: Palautetaan välimuistista merkinnät");
+            console.log("EntryService: Returning entries from cache");
             return this.entriesCache;
         }
 
-        // Jos pyyntö on jo käynnissä, odota sen valmistumista
+        // If a request is already in progress, wait for it to complete
         if (this.pendingRequest) {
-            console.log("EntryService: Pyyntö on jo käynnissä, odotetaan...");
+            console.log("EntryService: Request is already in progress, waiting...");
             return this.pendingRequest;
         }
 
-        // Aloita uusi pyyntö
+        // Start a new request
         try {
-            console.log("EntryService: Haetaan merkinnät palvelimelta");
+            console.log("EntryService: Fetching entries from server");
 
-            // Tallenna Promise muuttujaan, jotta muut samanaikaiset kutsut voivat odottaa sitä
+            // Store the Promise in a variable so other concurrent calls can wait for it
             this.pendingRequest = this.httpClient.get('/entries');
 
-            // Odota pyynnön valmistumista
+            // Wait for the request to complete
             const entries = await this.pendingRequest;
 
-            // Päivitä välimuisti ja aikaleimat
+            // Update cache and timestamps
             this.entriesCache = entries;
             this.lastFetchTime = new Date();
 
-            // Nollaa keskeneräinen pyyntö
+            // Reset pending request
             this.pendingRequest = null;
 
             return entries;
         } catch (error) {
             console.error('Error fetching entries:', error);
-            // Nollaa keskeneräinen pyyntö virheen sattuessa
+            // Reset pending request in case of error
             this.pendingRequest = null;
             throw error;
         }
     }
 
     /**
-     * Hakee merkinnän ID:n perusteella
-     * @param {number} id - Merkinnän ID
-     * @returns {Promise<Object>} Merkintä
+     * Retrieves an entry by ID
+     * @param {number} id - Entry ID
+     * @returns {Promise<Object>} Entry
      */
     async getEntryById(id) {
         try {
-            // Kokeile ensin löytää merkintä välimuistista
+            // First try to find the entry in cache
             if (this.entriesCache) {
                 const cachedEntry = this.entriesCache.find(entry => entry.entry_id === parseInt(id));
                 if (cachedEntry) {
-                    console.log(`EntryService: Palautetaan merkintä ID:llä ${id} välimuistista`);
+                    console.log(`EntryService: Returning entry with ID ${id} from cache`);
                     return cachedEntry;
                 }
             }
 
-            console.log(`EntryService: Haetaan merkintä ID:llä ${id} palvelimelta`);
+            console.log(`EntryService: Fetching entry with ID ${id} from server`);
             return await this.httpClient.get(`/entries/${id}`);
         } catch (error) {
             console.error('Error fetching entry:', error);
@@ -81,23 +89,23 @@ class EntryService {
     }
 
     /**
-     * Luo uuden merkinnän
-     * @param {Object} entryData - Merkinnän tiedot
-     * @returns {Promise<Object>} Vastaus palvelimelta
+     * Creates a new entry
+     * @param {Object} entryData - Entry details
+     * @returns {Promise<Object>} Response from server
      */
     async createEntry(entryData) {
         try {
-            // Kopio alkuperäisestä datasta
+            // Copy of original data
             const formattedData = { ...entryData };
 
-            // Varmista, että päivämäärä on ISO-muodossa (YYYY-MM-DD)
+            // Ensure date is in ISO format (YYYY-MM-DD)
             if (formattedData.entry_date) {
                 formattedData.entry_date = DateUtils.toISODate(formattedData.entry_date);
             }
 
-            console.log("EntryService: Luodaan merkintä", formattedData);
+            console.log("EntryService: Creating entry", formattedData);
 
-            // Tyhjennä välimuisti
+            // Clear cache
             this.entriesCache = null;
             this.lastFetchTime = null;
             this.pendingRequest = null;
@@ -110,24 +118,24 @@ class EntryService {
     }
 
     /**
-     * Päivittää merkinnän
-     * @param {number} id - Merkinnän ID
-     * @param {Object} entryData - Merkinnän päivitetyt tiedot
-     * @returns {Promise<Object>} Vastaus palvelimelta
+     * Updates an entry
+     * @param {number} id - Entry ID
+     * @param {Object} entryData - Updated entry details
+     * @returns {Promise<Object>} Response from server
      */
     async updateEntry(id, entryData) {
         try {
-            // Kopio alkuperäisestä datasta
+            // Copy of original data
             const formattedData = { ...entryData };
 
-            // Varmista, että päivämäärä on ISO-muodossa (YYYY-MM-DD)
+            // Ensure date is in ISO format (YYYY-MM-DD)
             if (formattedData.entry_date) {
                 formattedData.entry_date = DateUtils.toISODate(formattedData.entry_date);
             }
 
-            console.log("EntryService: Päivitetään merkintä", id, formattedData);
+            console.log("EntryService: Updating entry", id, formattedData);
 
-            // Tyhjennä välimuisti
+            // Clear cache
             this.entriesCache = null;
             this.lastFetchTime = null;
             this.pendingRequest = null;
@@ -140,15 +148,15 @@ class EntryService {
     }
 
     /**
-     * Poistaa merkinnän
-     * @param {number} id - Merkinnän ID
-     * @returns {Promise<Object>} Vastaus palvelimelta
+     * Deletes an entry
+     * @param {number} id - Entry ID
+     * @returns {Promise<Object>} Response from server
      */
     async deleteEntry(id) {
         try {
-            console.log("EntryService: Poistetaan merkintä", id);
+            console.log("EntryService: Deleting entry", id);
 
-            // Tyhjennä välimuisti
+            // Clear cache
             this.entriesCache = null;
             this.lastFetchTime = null;
             this.pendingRequest = null;
@@ -161,15 +169,16 @@ class EntryService {
     }
 
     /**
-     * Tyhjentää välimuistin
+     * Clears the cache
+     * Forces next request to fetch fresh data from server
      */
     clearCache() {
-        console.log("EntryService: Tyhjennetään välimuisti");
+        console.log("EntryService: Clearing cache");
         this.entriesCache = null;
         this.lastFetchTime = null;
         this.pendingRequest = null;
     }
 }
 
-// Luo singleton-instanssi
+// Create singleton instance
 export default new EntryService();

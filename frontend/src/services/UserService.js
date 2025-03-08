@@ -1,40 +1,56 @@
 import HttpClient from '../core/HttpClient.js';
 
+/**
+ * Service for managing diary entries
+ * Handles API communication with caching mechanism
+ */
 class EntryService {
+    /**
+     * Creates a new EntryService instance
+     * Initializes HTTP client and cache settings
+     */
     constructor() {
         this.httpClient = new HttpClient();
         this.entriesCache = null;
         this.lastFetchTime = null;
-        this.cacheLifetime = 5000; // 5 sekuntia
+        this.cacheLifetime = 5000; // 5 seconds
     }
 
-    // Formatoi käyttäjän syöttämä päivämäärä ISO-muotoon
-    // Huom: lisätään kellonaika 12:00 UTC, jotta päivämäärä ei siirry aikavyöhykkeen takia
+    /**
+     * Formats user input date to ISO format
+     * Note: Add 12:00 UTC time to ensure date doesn't shift due to timezone
+     * @param {string} dateString - The date string to format
+     * @returns {string|null} Formatted ISO date or null
+     */
     formatDate(dateString) {
         if (!dateString) return null;
 
-        // Jos päivämäärässä on jo aika-osa (ISO-string), käytä sitä sellaisenaan
+        // If date already has time part (ISO-string), use it as is
         if (dateString.includes('T')) return dateString;
 
-        // Muuten lisää aika (klo 12 päivällä)
+        // Otherwise add time (12:00 noon)
         return `${dateString}T12:00:00Z`;
     }
 
+    /**
+     * Retrieves all entries with caching
+     * @returns {Promise<Array>} List of entries
+     */
     async getAllEntries() {
         const now = new Date();
 
-        // Käytä välimuistia jos se on olemassa ja riittävän tuore
+        // Use cache if it exists and is fresh enough
         if (this.entriesCache && this.lastFetchTime &&
             now - this.lastFetchTime < this.cacheLifetime) {
-            console.log("EntryService: Palautetaan välimuistista merkinnät");
+            console.log("EntryService: Returning entries from cache");
             return this.entriesCache;
         }
 
         try {
-            console.log("EntryService: Haetaan merkinnät palvelimelta");
+            console.log("EntryService: Fetching entries from server");
             const entries = await this.httpClient.get('/entries');
 
-            // Tallenna välimuistiin
+            // Save to cache
             this.entriesCache = entries;
             this.lastFetchTime = now;
 
@@ -45,6 +61,11 @@ class EntryService {
         }
     }
 
+    /**
+     * Retrieves a specific entry by ID
+     * @param {number} id - The entry ID
+     * @returns {Promise<Object>} Entry object
+     */
     async getEntryById(id) {
         try {
             return await this.httpClient.get(`/entries/${id}`);
@@ -54,17 +75,22 @@ class EntryService {
         }
     }
 
+    /**
+     * Creates a new entry
+     * @param {Object} entryData - The entry data to create
+     * @returns {Promise<Object>} Response from server
+     */
     async createEntry(entryData) {
         try {
-            // Varmista että päivämäärä on oikeassa muodossa
+            // Ensure date is in correct format
             const formattedData = {
                 ...entryData,
                 entry_date: this.formatDate(entryData.entry_date)
             };
 
-            console.log("EntryService: Luodaan merkintä", formattedData);
+            console.log("EntryService: Creating entry", formattedData);
 
-            // Tyhjennä välimuisti
+            // Clear cache
             this.entriesCache = null;
 
             return await this.httpClient.post('/entries', formattedData);
@@ -74,9 +100,15 @@ class EntryService {
         }
     }
 
+    /**
+     * Updates an existing entry
+     * @param {number} id - The entry ID
+     * @param {Object} entryData - The updated entry data
+     * @returns {Promise<Object>} Response from server
+     */
     async updateEntry(id, entryData) {
         try {
-            // Varmista että päivämäärä on oikeassa muodossa
+            // Ensure date is in correct format
             const formattedData = {
                 ...entryData
             };
@@ -85,9 +117,9 @@ class EntryService {
                 formattedData.entry_date = this.formatDate(entryData.entry_date);
             }
 
-            console.log("EntryService: Päivitetään merkintä", id, formattedData);
+            console.log("EntryService: Updating entry", id, formattedData);
 
-            // Tyhjennä välimuisti
+            // Clear cache
             this.entriesCache = null;
 
             return await this.httpClient.put(`/entries/${id}`, formattedData);
@@ -97,11 +129,16 @@ class EntryService {
         }
     }
 
+    /**
+     * Deletes an entry
+     * @param {number} id - The entry ID to delete
+     * @returns {Promise<Object>} Response from server
+     */
     async deleteEntry(id) {
         try {
-            console.log("EntryService: Poistetaan merkintä", id);
+            console.log("EntryService: Deleting entry", id);
 
-            // Tyhjennä välimuisti
+            // Clear cache
             this.entriesCache = null;
 
             return await this.httpClient.delete(`/entries/${id}`);
@@ -111,11 +148,15 @@ class EntryService {
         }
     }
 
-    // Tyhjennä välimuisti manuaalisesti
+    /**
+     * Manually clear the cache
+     * Forces the next request to fetch fresh data from server
+     */
     clearCache() {
         this.entriesCache = null;
         this.lastFetchTime = null;
     }
 }
 
+// Export a singleton instance
 export default new EntryService();

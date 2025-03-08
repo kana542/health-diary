@@ -34,6 +34,11 @@ const validationErrorHandler = (req, res, next) => {
 
 /**
  * Custom default middleware for handling errors
+ * @param {object} err - error object
+ * @param {object} req - request object
+ * @param {object} res - response object
+ * @param {function} next - next function
+ * @returns {object} response object with error details
  */
 const errorHandler = (err, req, res, next) => {
   console.error('Error:', err.message);

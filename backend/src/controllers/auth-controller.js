@@ -2,8 +2,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 import { selectUserByUsername } from "../models/user-model.js";
-import logger from '../utils/logger.js';
-import { customError } from '../middlewares/error-handler.js';
+import logger from "../utils/logger.js";
+import { customError } from "../middlewares/error-handler.js";
 
 /**
  * Handles user login
@@ -20,7 +20,7 @@ const login = async (req, res, next) => {
    // Validate that both username and password are provided
    if (!username || !password) {
       logger.warn(`Login attempt without username or password`);
-      return next(customError('Username and password are required.', 400));
+      return next(customError("Username and password are required.", 400));
    }
 
    try {
@@ -32,7 +32,7 @@ const login = async (req, res, next) => {
       // Check if user exists
       if (!user) {
          logger.warn(`Login failed: user '${username}' not found`);
-         return next(customError('Bad username/password.', 401));
+         return next(customError("Bad username/password.", 401));
       }
 
       // Compare the provided password with the stored hash
@@ -52,7 +52,9 @@ const login = async (req, res, next) => {
             expiresIn: process.env.JWT_EXPIRES_IN || "24h", // Default to 24 hours if not specified in .env
          });
 
-         logger.info(`User '${username}' logged in successfully (ID: ${user.user_id})`);
+         logger.info(
+            `User '${username}' logged in successfully (ID: ${user.user_id})`
+         );
 
          // Return successful response with token and user data
          return res.json({
@@ -64,11 +66,11 @@ const login = async (req, res, next) => {
 
       // Password doesn't match
       logger.warn(`Login failed: incorrect password for user '${username}'`);
-      return next(customError('Bad username/password.', 401));
+      return next(customError("Bad username/password.", 401));
    } catch (error) {
       // Handle any unexpected errors
       logger.error("Login error:", error);
-      return next(customError('Server error', 500));
+      return next(customError("Server error", 500));
    }
 };
 
@@ -83,14 +85,16 @@ const login = async (req, res, next) => {
 const getMe = async (req, res, next) => {
    try {
       // Log the retrieval of user information
-      logger.info(`User information retrieved: ${req.user.username} (ID: ${req.user.user_id})`);
+      logger.info(
+         `User information retrieved: ${req.user.username} (ID: ${req.user.user_id})`
+      );
 
       // Return the user object that was attached to the request by authentication middleware
       res.json(req.user);
    } catch (error) {
       // Handle any unexpected errors
       logger.error("getMe error:", error);
-      next(customError('Server error', 500));
+      next(customError("Server error", 500));
    }
 };
 

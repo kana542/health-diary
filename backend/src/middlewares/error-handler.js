@@ -1,4 +1,4 @@
-import {validationResult} from 'express-validator';
+import { validationResult } from "express-validator";
 
 /**
  * Error generator function
@@ -7,9 +7,9 @@ import {validationResult} from 'express-validator';
  * @returns error object
  */
 const customError = (message, status) => {
-  const error = new Error(message);
-  error.status = status;
-  return error;
+   const error = new Error(message);
+   error.status = status;
+   return error;
 };
 
 /**
@@ -20,16 +20,16 @@ const customError = (message, status) => {
  * @return {*} next function call
  */
 const validationErrorHandler = (req, res, next) => {
-  const errors = validationResult(req, {strictParams: ['body']});
-  if (!errors.isEmpty()) {
-    const error = new Error('Bad Request');
-    error.status = 400;
-    error.errors = errors.array({onlyFirstError: true}).map((error) => {
-      return {field: error.path, message: error.msg};
-    });
-    return next(error);
-  }
-  next();
+   const errors = validationResult(req, { strictParams: ["body"] });
+   if (!errors.isEmpty()) {
+      const error = new Error("Bad Request");
+      error.status = 400;
+      error.errors = errors.array({ onlyFirstError: true }).map((error) => {
+         return { field: error.path, message: error.msg };
+      });
+      return next(error);
+   }
+   next();
 };
 
 /**
@@ -41,20 +41,20 @@ const validationErrorHandler = (req, res, next) => {
  * @returns {object} response object with error details
  */
 const errorHandler = (err, req, res, next) => {
-  console.error('Error:', err.message);
+   console.error("Error:", err.message);
 
-  if (err.name === 'ValidationError') {
-    return res.status(400).json({ message: err.message });
-  }
+   if (err.name === "ValidationError") {
+      return res.status(400).json({ message: err.message });
+   }
 
-  if (err.name === 'UnauthorizedError') {
-    return res.status(401).json({ message: 'Invalid token' });
-  }
+   if (err.name === "UnauthorizedError") {
+      return res.status(401).json({ message: "Invalid token" });
+   }
 
-  res.status(err.status || 500).json({
-    message: err.message || 'Internal server error',
-    errors: err.errors
-  });
+   res.status(err.status || 500).json({
+      message: err.message || "Internal server error",
+      errors: err.errors,
+   });
 };
 
-export {errorHandler, validationErrorHandler, customError};
+export { errorHandler, validationErrorHandler, customError };

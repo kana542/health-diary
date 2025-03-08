@@ -1,22 +1,22 @@
-import promisePool from '../utils/database.js';
-import logger from '../utils/logger.js';
+import promisePool from "../utils/database.js";
+import logger from "../utils/logger.js";
 
 /**
  * Retrieves all users from the database, excluding sensitive information
  * @returns {Promise<Array>} List of users with basic information
  */
 const selectAllUsers = async () => {
-  try {
-    const [rows] = await promisePool.query(
-      'SELECT user_id, username, email, created_at, user_level FROM Users',
-    );
+   try {
+      const [rows] = await promisePool.query(
+         "SELECT user_id, username, email, created_at, user_level FROM Users"
+      );
 
-    logger.info(`Retrieved ${rows.length} users`);
-    return rows;
-  } catch (error) {
-    logger.error('Error retrieving all users', error);
-    throw new Error('Database error');
-  }
+      logger.info(`Retrieved ${rows.length} users`);
+      return rows;
+   } catch (error) {
+      logger.error("Error retrieving all users", error);
+      throw new Error("Database error");
+   }
 };
 
 /**
@@ -25,23 +25,23 @@ const selectAllUsers = async () => {
  * @returns {Promise<Object|null>} User object or null if not found
  */
 const selectUserById = async (userId) => {
-  try {
-    const [rows] = await promisePool.query(
-      'SELECT user_id, username, email, created_at, user_level FROM Users WHERE user_id = ?',
-      [userId],
-    );
+   try {
+      const [rows] = await promisePool.query(
+         "SELECT user_id, username, email, created_at, user_level FROM Users WHERE user_id = ?",
+         [userId]
+      );
 
-    if (rows[0]) {
-      logger.info(`Retrieved user with ID: ${userId}`);
-    } else {
-      logger.warn(`No user found with ID: ${userId}`);
-    }
+      if (rows[0]) {
+         logger.info(`Retrieved user with ID: ${userId}`);
+      } else {
+         logger.warn(`No user found with ID: ${userId}`);
+      }
 
-    return rows[0] || null;
-  } catch (error) {
-    logger.error(`Error retrieving user by ID: ${userId}`, error);
-    throw new Error('Database error');
-  }
+      return rows[0] || null;
+   } catch (error) {
+      logger.error(`Error retrieving user by ID: ${userId}`, error);
+      throw new Error("Database error");
+   }
 };
 
 /**
@@ -53,36 +53,36 @@ const selectUserById = async (userId) => {
  * @returns {Promise<number>} ID of the newly inserted user
  */
 const insertUser = async (user) => {
-  try {
-    const [result] = await promisePool.query(
-      'INSERT INTO Users (username, password, email) VALUES (?, ?, ?)',
-      [user.username, user.password, user.email],
-    );
+   try {
+      const [result] = await promisePool.query(
+         "INSERT INTO Users (username, password, email) VALUES (?, ?, ?)",
+         [user.username, user.password, user.email]
+      );
 
-    logger.info(`User created with ID: ${result.insertId}`, {
-      username: user.username
-    });
-    return result.insertId;
-  } catch (error) {
-    logger.error('Error inserting new user', {
-      username: user.username,
-      error: error.message
-    });
+      logger.info(`User created with ID: ${result.insertId}`, {
+         username: user.username,
+      });
+      return result.insertId;
+   } catch (error) {
+      logger.error("Error inserting new user", {
+         username: user.username,
+         error: error.message,
+      });
 
-    // Check if this is a duplicate entry error
-    if (error.code === 'ER_DUP_ENTRY') {
-      // Check which field caused the duplicate error
-      if (error.message.includes('email')) {
-        throw new Error('Email address is already in use');
-      } else if (error.message.includes('username')) {
-        throw new Error('Username is already in use');
-      } else {
-        throw new Error('An account with this information already exists');
+      // Check if this is a duplicate entry error
+      if (error.code === "ER_DUP_ENTRY") {
+         // Check which field caused the duplicate error
+         if (error.message.includes("email")) {
+            throw new Error("Email address is already in use");
+         } else if (error.message.includes("username")) {
+            throw new Error("Username is already in use");
+         } else {
+            throw new Error("An account with this information already exists");
+         }
       }
-    }
 
-    throw new Error('Database error');
-  }
+      throw new Error("Database error");
+   }
 };
 
 /**
@@ -92,55 +92,55 @@ const insertUser = async (user) => {
  * @returns {Promise<boolean>} Whether the update was successful
  */
 const updateUser = async (userId, userData) => {
-  try {
-    let query = 'UPDATE Users SET ';
-    const values = [];
-    const updates = [];
-    const updateDetails = [];
+   try {
+      let query = "UPDATE Users SET ";
+      const values = [];
+      const updates = [];
+      const updateDetails = [];
 
-    if (userData.username) {
-      updates.push('username = ?');
-      values.push(userData.username);
-      updateDetails.push('Username updated');
-    }
+      if (userData.username) {
+         updates.push("username = ?");
+         values.push(userData.username);
+         updateDetails.push("Username updated");
+      }
 
-    if (userData.email) {
-      updates.push('email = ?');
-      values.push(userData.email);
-      updateDetails.push('Email updated');
-    }
+      if (userData.email) {
+         updates.push("email = ?");
+         values.push(userData.email);
+         updateDetails.push("Email updated");
+      }
 
-    if (userData.password) {
-      updates.push('password = ?');
-      values.push(userData.password);
-      updateDetails.push('Password changed');
-    }
+      if (userData.password) {
+         updates.push("password = ?");
+         values.push(userData.password);
+         updateDetails.push("Password changed");
+      }
 
-    // If no updates, return true (no-op)
-    if (updates.length === 0) {
-      logger.warn(`No fields to update for user ID: ${userId}`);
-      return true;
-    }
+      // If no updates, return true (no-op)
+      if (updates.length === 0) {
+         logger.warn(`No fields to update for user ID: ${userId}`);
+         return true;
+      }
 
-    query += updates.join(', ');
-    query += ' WHERE user_id = ?';
-    values.push(userId);
+      query += updates.join(", ");
+      query += " WHERE user_id = ?";
+      values.push(userId);
 
-    const [result] = await promisePool.query(query, values);
+      const [result] = await promisePool.query(query, values);
 
-    if (result.affectedRows > 0) {
-      logger.info(`User ${userId} updated successfully`, {
-        updates: updateDetails
-      });
-      return true;
-    }
+      if (result.affectedRows > 0) {
+         logger.info(`User ${userId} updated successfully`, {
+            updates: updateDetails,
+         });
+         return true;
+      }
 
-    logger.warn(`User with ID ${userId} not found for update`);
-    return false;
-  } catch (error) {
-    logger.error(`Error updating user ${userId}`, error);
-    throw new Error('Database error');
-  }
+      logger.warn(`User with ID ${userId} not found for update`);
+      return false;
+   } catch (error) {
+      logger.error(`Error updating user ${userId}`, error);
+      throw new Error("Database error");
+   }
 };
 
 /**
@@ -149,23 +149,23 @@ const updateUser = async (userId, userData) => {
  * @returns {Promise<boolean>} Whether the deletion was successful
  */
 const deleteUser = async (userId) => {
-  try {
-    const [result] = await promisePool.query(
-      'DELETE FROM Users WHERE user_id = ?',
-      [userId],
-    );
+   try {
+      const [result] = await promisePool.query(
+         "DELETE FROM Users WHERE user_id = ?",
+         [userId]
+      );
 
-    if (result.affectedRows > 0) {
-      logger.info(`User ${userId} deleted successfully`);
-      return true;
-    }
+      if (result.affectedRows > 0) {
+         logger.info(`User ${userId} deleted successfully`);
+         return true;
+      }
 
-    logger.warn(`User with ID ${userId} not found for deletion`);
-    return false;
-  } catch (error) {
-    logger.error(`Error deleting user ${userId}`, error);
-    throw new Error('Database error');
-  }
+      logger.warn(`User with ID ${userId} not found for deletion`);
+      return false;
+   } catch (error) {
+      logger.error(`Error deleting user ${userId}`, error);
+      throw new Error("Database error");
+   }
 };
 
 /**
@@ -174,30 +174,30 @@ const deleteUser = async (userId) => {
  * @returns {Promise<Object|null>} Full user object or null if not found
  */
 const selectUserByUsername = async (username) => {
-  try {
-    const [rows] = await promisePool.query(
-      'SELECT * FROM Users WHERE username = ?',
-      [username],
-    );
+   try {
+      const [rows] = await promisePool.query(
+         "SELECT * FROM Users WHERE username = ?",
+         [username]
+      );
 
-    if (rows[0]) {
-      logger.info(`Retrieved user with username: ${username}`);
-    } else {
-      logger.warn(`No user found with username: ${username}`);
-    }
+      if (rows[0]) {
+         logger.info(`Retrieved user with username: ${username}`);
+      } else {
+         logger.warn(`No user found with username: ${username}`);
+      }
 
-    return rows[0] || null;
-  } catch (error) {
-    logger.error(`Error retrieving user by username: ${username}`, error);
-    throw new Error('Database error');
-  }
+      return rows[0] || null;
+   } catch (error) {
+      logger.error(`Error retrieving user by username: ${username}`, error);
+      throw new Error("Database error");
+   }
 };
 
 export {
-  selectAllUsers,
-  selectUserById,
-  insertUser,
-  updateUser,
-  deleteUser,
-  selectUserByUsername,
+   selectAllUsers,
+   selectUserById,
+   insertUser,
+   updateUser,
+   deleteUser,
+   selectUserByUsername,
 };

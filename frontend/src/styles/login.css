@@ -1,8 +1,8 @@
 .wrapper {
    width: 420px;
    background: transparent;
-   border: 2px solid rgba(255, 255, 255, .2);
-   box-shadow: 0 0 10px rgba(0, 0, 0, .2);
+   border: 2px solid rgba(255, 255, 255, 0.2);
+   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
    backdrop-filter: blur(20px);
    color: #fff;
    border-radius: 10px;
@@ -27,7 +27,7 @@
    background: transparent;
    border: none;
    outline: none;
-   border: 2px solid rgba(255, 255, 255, .2);
+   border: 2px solid rgba(255, 255, 255, 0.2);
    border-radius: 40px;
    font-size: 16px;
    color: #fff;
@@ -83,33 +83,33 @@
 }
 
 .error-message {
-    background-color: rgba(255, 87, 87, 0.3);
-    border-radius: 5px;
-    padding: 10px;
-    margin: 10px 0;
-    color: #fff;
-    text-align: center;
-    font-size: 14px;
+   background-color: rgba(255, 87, 87, 0.3);
+   border-radius: 5px;
+   padding: 10px;
+   margin: 10px 0;
+   color: #fff;
+   text-align: center;
+   font-size: 14px;
 }
 
 .success-message {
-    background-color: rgba(56, 176, 0, 0.3);
-    border-radius: 5px;
-    padding: 10px;
-    margin: 10px 0;
-    color: #fff;
-    text-align: center;
-    font-size: 14px;
+   background-color: rgba(56, 176, 0, 0.3);
+   border-radius: 5px;
+   padding: 10px;
+   margin: 10px 0;
+   color: #fff;
+   text-align: center;
+   font-size: 14px;
 }
 
 .input-box.has-error input {
-    border-color: rgba(255, 87, 87, 0.8);
+   border-color: rgba(255, 87, 87, 0.8);
 }
 
 .field-error {
-    color: rgba(255, 87, 87, 0.9);
-    font-size: 12px;
-    position: absolute;
-    bottom: -22px;
-    left: 10px;
+   color: rgba(255, 87, 87, 0.9);
+   font-size: 12px;
+   position: absolute;
+   bottom: -22px;
+   left: 10px;
 }

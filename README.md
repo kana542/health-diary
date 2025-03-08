@@ -21,6 +21,10 @@
    - [Backend Setup](#backend-setup)
    - [Frontend Setup](#frontend-setup)
 8. [Database Initialization](#8-database-initialization)
+9. [Known Issues](#9-known-issues)
+10. [References and Resources](#10-references-and-resources)
+    - [Tutorials](#tutorials)
+    - [AI](#ai)
 
 ## 1. Overview
 The Health Diary is a full-stack web application designed to help users track their health-related metrics over time. It provides a clean, intuitive interface for logging daily metrics such as mood, weight, and sleep hours, along with the ability to visualize trends through charts and graphs.
@@ -189,3 +193,26 @@ CREATE TABLE DiaryEntries (
     FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
     CONSTRAINT unique_user_date UNIQUE (user_id, entry_date)
 );
+```
+
+## 9. Known Issues
+
+The following are known issues and limitations in the current implementation of the Health Diary application:
+
+### Date Handling Across Timezones
+- **Issue**: Entry dates may shift by one day in certain timezones due to UTC conversion issues.
+- 
+
+---
+
+## 10. References and Resources
+
+### Tutorials
+- [How To Make A Dynamic Calendar Using HTML CSS & JavaScript](https://openai.com/)
+- [Login Form in HTML & CSS](https://youtu.be/hlwlM4a5rxg?si=B0iUEQstZ7BpoSnE)
+
+
+### AI
+This project has utilized artificial intelligence as a development aid, for example as code review and improvement suggestions.
+- [ChatGPT 4o](https://chatgpt.com/)
+- [Claude 3.7 Sonnet (extended)](https://claude.ai)

@@ -2,27 +2,27 @@
 
 ## Table of Contents
 1. [Overview](#1-overview)
-2. [Database Structure](#2-database-structure)
-3. [Core Functionality](#3-core-functionality)
+3. [Database Structure](#2-database-structure)
+4. [Core Functionality](#3-core-functionality)
    - [Authentication and Authorization](#authentication-and-authorization)
    - [Health Diary Management](#health-diary-management)
-4. [Frontend Architecture](#4-frontend-architecture)
+5. [Frontend Architecture](#4-frontend-architecture)
    - [Core Components](#core-components)
    - [UI Components](#ui-components)
-5. [Libraries and Technologies](#5-libraries-and-technologies)
+6. [Libraries and Technologies](#5-libraries-and-technologies)
    - [Backend](#backend)
    - [Frontend](#frontend)
-6. [Security Measures](#6-security-measures)
+7. [Security Measures](#6-security-measures)
    - [Authentication Security](#authentication-security)
    - [API Security](#api-security)
    - [Error Handling and Logging](#error-handling-and-logging)
    - [Frontend Security](#frontend-security)
-7. [Installation and Setup](#7-installation-and-setup)
+8. [Installation and Setup](#7-installation-and-setup)
    - [Backend Setup](#backend-setup)
    - [Frontend Setup](#frontend-setup)
-8. [Database Initialization](#8-database-initialization)
-9. [Known Issues](#9-known-issues)
-10. [References and Resources](#10-references-and-resources)
+9. [Database Initialization](#8-database-initialization)
+10. [Known Issues](#9-known-issues)
+11. [References and Resources](#10-references-and-resources)
     - [Tutorials](#tutorials)
     - [AI](#ai)
 
@@ -35,6 +35,13 @@ The Health Diary is a full-stack web application designed to help users track th
 - Calendar interface for viewing and accessing entries
 - Data visualization with interactive charts
 - Mobile-responsive design
+
+![screenshot3](https://github.com/user-attachments/assets/b7674237-99f0-4954-b58f-fb25088ea5af)
+![screenshot6](https://github.com/user-attachments/assets/228f43bb-4082-4c3e-b3fb-830a9ef8b26f)
+![screenshot5](https://github.com/user-attachments/assets/2697f6a9-72d0-4afb-b7f9-f653e078cec8)
+![screenshot1](https://github.com/user-attachments/assets/7cf94218-0589-4d6f-b414-25e505cae042)
+![screenshot2](https://github.com/user-attachments/assets/f5c68c2d-078c-49d3-8bcd-ea03b3cbde7a)
+
 
 ## 2. Database Structure
 The application uses a MySQL database with the following structure:

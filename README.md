@@ -208,7 +208,7 @@ The following are known issues and limitations in the current implementation of 
 
 ### Date Handling Across Timezones
 - **Issue**: Entry dates may shift by one day in certain timezones due to UTC conversion issues.
-- 
+- **Issue**: Responsiveness at certain width
 
 ---
 

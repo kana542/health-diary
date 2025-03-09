@@ -205,10 +205,8 @@ CREATE TABLE DiaryEntries (
 ## 9. Known Issues
 
 The following are known issues and limitations in the current implementation of the Health Diary application:
-
-### Date Handling Across Timezones
 - **Issue**: Entry dates may shift by one day in certain timezones due to UTC conversion issues.
-- **Issue**: Responsiveness at certain width
+- **Issue**: Responsiveness at certain width.
 
 ---
 

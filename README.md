@@ -18,11 +18,11 @@
    - [Error Handling and Logging](#error-handling-and-logging)
    - [Frontend Security](#frontend-security)
 8. [Installation and Setup](#7-installation-and-setup)
+   - [Database Initialization](#database-initialization)
    - [Backend Setup](#backend-setup)
    - [Frontend Setup](#frontend-setup)
-9. [Database Initialization](#8-database-initialization)
-10. [Known Issues](#9-known-issues)
-11. [References and Resources](#10-references-and-resources)
+8. [Known Issues](#8-known-issues)
+9. [References and Resources](#9-references-and-resources)
     - [Tutorials](#tutorials)
     - [AI](#ai)
 
@@ -126,52 +126,20 @@ The application uses a MySQL database with the following structure:
 
 ## 7. Installation and Setup
 
-### Backend Setup
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-repo/health-diary.git
-   ```
-2. Navigate to the backend directory:
-   ```bash
-   cd health-diary/backend
-   ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Start the server:
-   ```bash
-   npm start
-   ```
-
-### Frontend Setup
-1. Navigate to the frontend directory:
-   ```bash
-   cd health-diary/frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-## 8. Database Initialization
-
-Create a database user with appropriate privileges:
-```sql
-CREATE USER 'healthdiary_user'@'localhost' IDENTIFIED BY 'secure_password';
-GRANT ALL PRIVILEGES ON `HealthDiary`.* TO 'healthdiary_user'@'localhost';
-FLUSH PRIVILEGES;
-```
+### Database Initialization
 
 Create the database:
 ```sql
 DROP DATABASE IF EXISTS HealthDiary;
 CREATE DATABASE HealthDiary CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE HealthDiary;
+```
+
+Create a database user with appropriate privileges:
+```sql
+CREATE USER 'healthdiary_user'@'localhost' IDENTIFIED BY 'secure_password';
+GRANT ALL PRIVILEGES ON `HealthDiary`.* TO 'healthdiary_user'@'localhost';
+FLUSH PRIVILEGES;
 ```
 
 Create the Users table:
@@ -202,7 +170,50 @@ CREATE TABLE DiaryEntries (
 );
 ```
 
-## 9. Known Issues
+### Backend Setup
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-repo/health-diary.git
+   ```
+2. Navigate to the backend directory:
+   ```bash
+   cd health-diary/backend
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Update the environment variables (.env)
+   ```
+   PORT=3000
+   DB_HOST=localhost
+   DB_USER=healthdiary_user
+   DB_PASSWORD=secure_password
+   DB_NAME=HealthDiary
+   JWT_SECRET=your_secret_key_here
+   JWT_EXPIRES_IN=24h
+   FRONTEND_URL=http://localhost:5000
+   ```
+6. Start the server:
+   ```bash
+   npm start
+   ```
+
+### Frontend Setup
+1. Navigate to the frontend directory:
+   ```bash
+   cd health-diary/frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## 8. Known Issues
 
 The following are known issues and limitations in the current implementation of the Health Diary application:
 - **Issue**: Entry dates may shift by one day in certain timezones due to UTC conversion issues.
@@ -210,7 +221,7 @@ The following are known issues and limitations in the current implementation of 
 
 ---
 
-## 10. References and Resources
+## 9. References and Resources
 
 ### Tutorials
 - [How To Make A Dynamic Calendar Using HTML CSS & JavaScript](https://openai.com/)

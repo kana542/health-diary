@@ -215,6 +215,11 @@ The following are known issues and limitations in the current implementation of 
 ### Tutorials
 - [How To Make A Dynamic Calendar Using HTML CSS & JavaScript](https://openai.com/)
 - [Login Form in HTML & CSS](https://youtu.be/hlwlM4a5rxg?si=B0iUEQstZ7BpoSnE)
+- [EventBus Pattern: Event-Driven Communication in JS](https://yaron-galperin.medium.com/eventbus-pattern-event-driven-communication-in-js-2f29c3875982)
+- [How to Implement an Event Bus in JavaScript](https://dev.to/openhacking/how-to-implement-an-event-bus-in-javascript-15io)
+- [Single-page application -arkkitehtuuri](https://www.theseus.fi/bitstream/handle/10024/754107/Single-page%20application%20-arkkitehtuuri.pdf)
+- [Web-sovelluskehitys / Web Development](https://github.com/mattpe/hyte-web-dev/tree/main)
+- [hyte-server-example-25](https://github.com/mattpe/hyte-server-example-25)
 
 
 ### AI

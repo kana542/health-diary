@@ -131,14 +131,14 @@ The application uses a MySQL database with the following structure:
 Create the database:
 ```sql
 DROP DATABASE IF EXISTS HealthDiary;
-CREATE DATABASE HealthDiary CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE HealthDiary;
 USE HealthDiary;
 ```
 
 Create a database user with appropriate privileges:
 ```sql
-CREATE USER 'healthdiary_user'@'localhost' IDENTIFIED BY 'secure_password';
-GRANT ALL PRIVILEGES ON `HealthDiary`.* TO 'healthdiary_user'@'localhost';
+CREATE USER 'user'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON `HealthDiary`.* TO 'user'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
@@ -149,8 +149,7 @@ CREATE TABLE Users (
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    user_level ENUM('user', 'admin') DEFAULT 'user'
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -158,15 +157,14 @@ Create the DiaryEntries table:
 ```sql
 CREATE TABLE DiaryEntries (
     entry_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT,
     entry_date DATE NOT NULL,
-    mood ENUM('Sad', 'Tired', 'Neutral', 'Satisfied', 'Happy'),
+    mood VARCHAR(50),
     weight DECIMAL(5,2),
-    sleep_hours DECIMAL(4,1),
+    sleep_hours INT,
     notes TEXT,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
-    CONSTRAINT unique_user_date UNIQUE (user_id, entry_date)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 ```
 

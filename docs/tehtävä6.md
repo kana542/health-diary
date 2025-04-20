@@ -1,5 +1,7 @@
 # Health-Diary Robot Framework -testit: Kirjautuminen kryptatuilla tunnuksilla
 
+Tiedosto: [Tehtävä 6](https://github.com/kana542/health-diary/blob/testaus/tests/front/crypted_login.robot)
+
 ## Yleiskuvaus
 Tämä Robot Framework -testitiedosto testaa Health-Diary -sovelluksen kirjautumistoimintoa käyttäen CryptoLibrary-kirjastolla kryptattuja tunnuksia:
 1. Hyödyntää Robot Frameworkin CryptoLibrary-kirjastoa

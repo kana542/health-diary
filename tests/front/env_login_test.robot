@@ -9,7 +9,7 @@ Test Teardown    Clean Up Test
 ${URL}    http://localhost:5000
 ${LOGIN_URL}    ${URL}/login
 ${DASHBOARD_URL}    ${URL}/dashboard
-${ENV_FILE}    ${CURDIR}/../../../.env
+${ENV_FILE}    ${CURDIR}/.env
 
 *** Test Cases ***
 Valid Login Test

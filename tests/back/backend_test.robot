@@ -5,8 +5,8 @@ Library    DateTime
 
 *** Variables ***
 ${BASE_URL}    http://localhost:3000/api
-${USERNAME}    -
-${PASSWORD}    -
+${USERNAME}    User1
+${PASSWORD}    PassuKahdeksan
 
 *** Test Cases ***
 Login and Get Token

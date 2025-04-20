@@ -1,6 +1,6 @@
 # GitHub Pages: Robot Framework -testitulosten julkaisu
 
-[Sivusto](kana542.github.io)
+Sivusto: [Tehtävä 8](kana542.github.io)
 
 ## Yleiskuvaus
 Tämä tehtävä käsittelee Robot Framework -testien tulosten julkaisua GitHub Pages -sivuston kautta:

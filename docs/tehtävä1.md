@@ -1,5 +1,7 @@
 # Ohjelmistotestaus - Yksilötehtävä 1
 
+Tiedosto: [Tehtävä 1](https://github.com/kana542/health-diary/blob/testaus/docs/teht%C3%A4v%C3%A41.md)
+
 ## Asennetut työkalut
 - Robot Framework - Automaatiotestauksen kehys
 - Browser Library - Selaintestaukseen

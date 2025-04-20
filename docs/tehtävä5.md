@@ -1,5 +1,7 @@
 # Health-Diary Robot Framework -testit: Kirjautuminen .env-tiedostosta
 
+Tiedosto: [Tehtävä 5](https://github.com/kana542/health-diary/blob/testaus/tests/front/env_login_test.robot)
+
 ## Yleiskuvaus
 Tämä Robot Framework -testitiedosto testaa Health-Diary -sovelluksen kirjautumistoimintoa käyttäen .env-tiedostoon tallennettuja käyttäjätunnuksia:
 1. Lukee käyttäjätunnukset ja salasanat .env-tiedostosta

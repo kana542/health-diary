@@ -1,6 +1,6 @@
 # Ohjelmistotestaus - Yksilötehtävä 1
 
-Tiedosto: [Tehtävä 1](https://github.com/kana542/health-diary/blob/testaus/tests/front/login_test.robot)
+Tiedosto: [Tehtävä 1](https://github.com/kana542/health-diary/blob/testaus/tests/asennustesti.py)
 
 ## Asennetut työkalut
 - Robot Framework - Automaatiotestauksen kehys

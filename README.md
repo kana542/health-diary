@@ -1,5 +1,4 @@
-Päivitetty kansiorakennetta.
-Kaikki yksilötehtävät löytyvät kansiosta "for_sakari".
+Kaikki yksilötehtävien selitykset löytyvät kansiosta "docs".
 
 Tekoälyn käyttö dokumentissa tähän asti (Claude):
 - _"Opiskelen robot framework käyttöä, annan sinulle .robot koodia ja sinun tehtävänäsi on auttaa parantamaan sitä"_

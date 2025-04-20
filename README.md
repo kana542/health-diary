@@ -16,7 +16,6 @@ Jokaiselle tehtävälle on luotu erillinen Markdown-tiedosto, joka sisältää y
 7. [Tehtävä 7](https://github.com/kana542/health-diary/blob/testaus/docs/tehtävä7.md)
 8. [Tehtävä 8](https://github.com/kana542/health-diary/blob/testaus/docs/tehtävä8.md)
 9. [Tehtävä 9](https://github.com/kana542/health-diary/blob/testaus/docs/tehtävä9.md)
-10. [Tehtävä 10](https://github.com/kana542/health-diary/blob/testaus/docs/tehtävä10.md)
 
 ## Tekoälyn käyttö projektissa
 

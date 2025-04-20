@@ -1,8 +1,35 @@
-Ohjelmistotestaus - Yksilötehtävä 7 
+# Health-Diary Robot Framework -testit: Raportoinnin ohjaus
 
-Ei tiedostoa.
+## Yleiskuvaus
+Tämä tehtävä keskittyy Robot Framework -testien tulosten hallintaan:
+1. Loki- ja raporttitiedostojen ohjaaminen erilliseen outputs-kansioon
+2. Testitulosten ja -dokumentaation organisointi
+3. Testitulosteiden hallinnan peruskomentosyntaksi
 
-1. Luodaan uusi kansio samaan kansioon missä .robot tiedostot/testit.
-2. Robot skriptiä suorittaessa, lisätään mukaan "-d kansion_nimi", esim. "robot -d output login_test.robot"
-3. Kaikki skriptin tuottamat tiedostot/kansiot tallentuvat uuteen haluttuun kansioon.
-4. Jos halutaan lisätä/karsia tallenteita, voidaan lisätä muita parametrejä mukaan.
+## Toteutuksen vaiheet
+
+### 1. Kansion luominen
+- Luodaan erillinen outputs-kansio samaan hakemistoon, jossa .robot testitiedostot sijaitsevat
+- Varmistetaan, että kansiolla on oikeat käyttöoikeudet
+
+### 2. Testien suorittaminen ohjaamalla tulosteet
+- Käytetään Robot Frameworkin -d parametria määrittämään tulosteiden kohde
+- Komento: `robot -d output login_test.robot`
+- Kaikki testien tuottamat tiedostot (log.html, report.html, output.xml) ohjautuvat määriteltyyn kansioon
+
+### 3. Tulosteiden organisointi
+- Kaikki skriptin tuottamat tiedostot ja alikansiot tallentuvat määriteltyyn kansioon
+- Erillinen kansiorakenne pitää projektihakemiston siistimpänä
+- Helpottaa tulosten arkistointia ja jakamista
+
+### 4. Lisäparametrien käyttö
+- Voidaan hallita tuotettujen raporttien määrää ja sisältöä lisäparametreilla
+- Esimerkiksi: `robot -d output --log none --report none login_test.robot` (tuotetaan vain output.xml)
+- Tai: `robot -d output --name "Kirjautumistestit" login_test.robot` (muutetaan raportin nimeä)
+
+## Keskeiset ominaisuudet
+- **Tulosten hallinta**: Testien tulosteet tallentuvat järjestelmällisesti yhteen paikkaan
+- **Järjestyksen säilyttäminen**: Projektikansio pysyy siistinä ja organisoituna
+- **Konfiguroitavuus**: Mahdollisuus mukauttaa tulostettavia raportteja eri parametreilla
+- **Tulosten arkistointi**: Helpottaa testitulosten säilyttämistä ja vertailua
+- **CI/CD -integraatio**: Mahdollistaa tulosten helpon keräämisen jatkuvan integraation järjestelmissä

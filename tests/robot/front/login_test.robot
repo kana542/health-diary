@@ -7,8 +7,8 @@ Test Teardown   Clean Up Test
 ${URL}   http://localhost:5000
 ${LOGIN_URL}   ${URL}/login
 ${DASHBOARD_URL}   ${URL}/dashboard
-${VALID_USERNAME}   User1
-${VALID_PASSWORD}   PassuKahdeksan
+${VALID_USERNAME}   -
+${VALID_PASSWORD}   -
 ${INVALID_USERNAME}   wronguser
 ${INVALID_PASSWORD}   wrongpass
 ${SELECTED_DATE}   ${EMPTY}

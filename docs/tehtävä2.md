@@ -1,5 +1,7 @@
 # Health-Diary Robot Framework -testit: Kirjautuminen ja merkintöjen lisääminen
 
+Tiedosto: [Tehtävä 2](https://github.com/kana542/health-diary/blob/testaus/tests/front/login_test.robot)
+
 ## Yleiskuvaus
 
 Tämä Robot Framework -testitiedosto testaa Health-Diary -sovelluksen perustoiminnallisuuksia:
